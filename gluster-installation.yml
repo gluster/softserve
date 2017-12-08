@@ -1,0 +1,27 @@
+---
+- hosts: #gluster group
+  name: Gluster compilation and installation
+  tasks:
+    - name: Fetch glusterfs repo file
+      get_url:
+        dest: /
+        url: http://download.gluster.org/pub/gluster/glusterfs/LATEST/CentOS/glusterfs-epel.repo
+
+    - name: Set repo file permission
+      file:
+        owner: root
+        group: root
+        mode: 0644
+        path: /etc/yum.repos.d/glusterfs-epel.repo
+
+    - name: Install glusterfs-server
+      yum:
+        name: glusterfs-server
+        state: installed
+        enablerepo: "glusterfs-epel"
+
+    - name: Start and enable the glusterd service
+      service:
+        name: glusterd
+        state: started
+        enabled: yes
