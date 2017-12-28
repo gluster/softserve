@@ -59,3 +59,20 @@ a.btn-round {
   text-align: center;
   width: 300px;
 }
+
+div.about {
+  test-align: center;
+  overflow: hidden;
+  border: 2px solid black;
+  width: 300px;
+  background: grey;
+}
+
+a.button {
+    -webkit-appearance: button;
+    -moz-appearance: button;
+    appearance: button;
+
+    text-decoration: none;
+    color: initial;
+}
