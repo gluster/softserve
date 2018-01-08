@@ -5,13 +5,15 @@ Web application for self serving fixed duration VMs to carry out debugging in Gl
 * Before you start installation make sure you have a working installation of python2
 * Create and activate virtualenv
 * In your virtualenv run ```pip install -r requirements.txt```
-* Now you are all ready with the installation
+* Now you are all ready with the installation and development
 
-## Description
+## Goals
 * Launch the VMs as per the need of the user.
 * Tear down automatically after a specific number of hours. This is a requirement so that the machine time is used judicially and tied down to a specific bug
 * Allow users who are in the Gluster organization on Github to request VMs.
 * Users should be able to upload their SSH public key and they will get access to the machines when it is created.
+* Maximum allowance of 20 VMs at a time across all the user.
+* Send the notification to the user half an hour before terminating the VM ( when meeting the deadline of the 4 hours) 
 
 ## Usage
 * Run migrations and setup database `python manage.py db upgrade`
@@ -21,4 +23,4 @@ Web application for self serving fixed duration VMs to carry out debugging in Gl
 
 ## TODO
 * Add the deleting functionality in the code
-* Write the test cases
+* Write down the test cases
