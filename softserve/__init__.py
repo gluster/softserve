@@ -10,5 +10,6 @@ db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 github = GitHub(app)
 
-from controller
-from model import User, Vm, Removed
+from views import about
+from model import User, Node_request, Vm
+db.create_all()

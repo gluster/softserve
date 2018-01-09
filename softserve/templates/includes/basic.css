@@ -61,11 +61,11 @@ a.btn-round {
 }
 
 div.about {
-  test-align: center;
+  text-align: center;
   overflow: hidden;
   border: 2px solid black;
   width: 300px;
-  background: grey;
+  background-color: grey;
 }
 
 a.button {

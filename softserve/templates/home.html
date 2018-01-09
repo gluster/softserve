@@ -4,25 +4,22 @@
 {% block body %}
 
 <center>
-	<h1><strong>Welcome.Enter the cluster info.</h1>
+	<h1><strong>Welcome.Enter the info.</h1>
 		<div id="box">
-			<form action='/create_node' enctype="multipart/multipart/form-data" method="post">
+			<form action='/create-node' method="post">
 				<fieldset>
-					<p><b>ENTER YOUR REDHAT ID<br>
-						<input type="text" name="rid"></b></p>
-					<p><b>ENTER THE CLUSTER NAME<br>
-						<input type="text" name="cluster_name"></b></p>
-						<p><b>ENTER THE NUMBER OF NODES<br>
+					<p><b>ENTER THE MACHINE NAME<br>
+						<input type="text" name="node_name"></b></p>
+						<p><b>ENTER THE NUMBER OF MACHINES<br>
 							<input type="text" name="counts"></b></p>
-						<p><b>ENTER THE LIFE OF CLUSTER(IN HOURS)<br>
-							<input type="text" name="hours"></b></p>
+						<p><b>ENTER THE LIFE OF MACHINE(IN HOURS[max 4 hours])<br>
+							<input type="text" name="hours" max='4'></b></p>
 						<p>
-							<div id="btn-round">
-								<label for="uploadfile" class="btn">UPLOAD</label>
-     						<center><input type="file" id="uploadfile" style="visibility:hidden; name="filename" value="UPLOAD YOUR OWN PUBLIC KEY"/></center>
-							</div>
+							<b>UPLOAD SSH KEY<br>
+								<textarea cols='40' rows='4' name='pubkey'>
+								</textarea>
 						</p>
-						<p><input type="submit" value="CREATE MY CLUSTER"></p>
+						<p><input type="submit" value="CREATE"></p>
 				</fieldset>
 			</form>
 		</div>
