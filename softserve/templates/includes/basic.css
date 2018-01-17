@@ -11,7 +11,7 @@ h1, p {
   margin-bottom: 10px;
 }
 
-div.box {
+.box {
   margin: 50px auto;
   width:300px;
 }
@@ -60,7 +60,7 @@ a.btn-round {
   width: 300px;
 }
 
-div.about {
+.about {
   text-align: center;
   overflow: hidden;
   border: 2px solid black;

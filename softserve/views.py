@@ -8,7 +8,6 @@ from lib import *
 
 @app.before_request
 def before_request():
-    print "hii"
     g.user = None
     if 'token' in session:
         user = User.query.filter_by(token=session['token']).first()
@@ -59,6 +58,7 @@ def home():
 
 @app.route('/create-node', methods=['POST'])
 @organization_access_required('gluster')
+@service_provider_config
 def get_node_data():
 
     if request.method == 'POST':
@@ -72,5 +72,8 @@ def get_node_data():
 
         session['node_request_id'] = node_request.id
 
-        create_node(node_counts, node_name)
+        create_node(node_counts, node_name, node_request, pubkey)
         return redirect('/')
+
+@app.route('/info', methods=['GET', 'POST'])
+def display_info():

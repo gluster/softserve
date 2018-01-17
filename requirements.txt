@@ -5,3 +5,4 @@ pyrax
 requests
 GitHub-Flask
 Flask-Script
+Flask-APScheduler
