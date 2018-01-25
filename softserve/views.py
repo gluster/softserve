@@ -1,8 +1,8 @@
-from flask import render_template, url_for, request, session, g, redirect, jsonify
+from flask import render_template, request, session, g, redirect, jsonify
 
 from softserve import app, db, github
-from model import User, Node_request
-from lib import create_node, organization_access_required
+from softserve.model import User, NodeRequest
+from softserve.lib import create_node, organization_access_required
 
 
 @app.before_request
@@ -61,7 +61,7 @@ def home():
 
 
 @app.route('/create-node', methods=['GET', 'POST'])
-#@organization_access_required('gluster')
+@organization_access_required('gluster')
 def get_node_data():
     if request.method == 'POST':
         print g.user
@@ -70,7 +70,12 @@ def get_node_data():
         name = request.form['node_name']
         hours_ = request.form['hours']
         pubkey_ = request.form['pubkey']
-        node_request = Node_request(user_id=g.user.id, node_name=name, node_counts=counts, hours=hours_, pubkey=pubkey_)
+        node_request = NodeRequest(
+            user_id=g.user.id,
+            node_name=name,
+            node_counts=counts,
+            hours=hours_,
+            pubkey=pubkey_)
         db.session.add(node_request)
         db.session.commit()
 

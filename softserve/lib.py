@@ -1,10 +1,13 @@
+'''
+Shared library functions for softserve.
+'''
+
 import time
 import re
-from datetime import datetime
 from functools import wraps
-from softserve import db, github, nova
-from model import Vm
 from flask import jsonify
+from softserve import db, github, nova
+from softserve.model import Vm
 
 
 def organization_access_required(org):
@@ -30,32 +33,35 @@ def organization_access_required(org):
 
 
 def create_node(counts, name, node_request, pubkey):
+    '''
+    Create a node in the cloud provider
+    '''
     flavor = nova.flavors.find(name='2048MB')
     image = nova.images.find(name='CentOS7')
 
-    '''create the nodes'''
+    # create the nodes
     for count in range(counts):
         vm_name = str(count+1)+'.'+name
         node = nova.servers.create(name=vm_name, flavor=flavor.id,
                                    image=image.id, key_name=pubkey)
 
-        '''wait for server to get active'''
+        # wait for server to get active
         while node.status == 'BUILD':
             time.sleep(5)
             node = nova.servers.get(node.id)
 
-        '''get ip_address of the active node and store it in a file'''
+        # get ip_address of the active node and store it in a file
         for network in node.networks['public']:
-            if re.match('\d+\.\d+\.\d+\.\d+', network):
-                vm = Vm(ip_address=network, vm_name=vm_name,
-                        created_at=datetime.datetime.now(), state=node.status,
-                        details=node_request)
-                db.session.add(vm)
+            if re.match(r'\d+\.\d+\.\d+\.\d+', network):
+                machine = Vm(ip_address=network,
+                             vm_name=vm_name,
+                             state=node.status)
+                machine.details = node_request
+                db.session.add(machine)
                 db.session.commit()
-                '''
-                Storing the IP address of the machines in a file(filename is
-                same as that of the node name given by user) for future purpose
-                '''
+                # Storing the IP address of the machines in a file(filename is
+                # same as that of the node name given by user) for future
+                # purpose
                 f = open(name, 'a')
                 f.write("{}\n".format(network))
                 f.close()
