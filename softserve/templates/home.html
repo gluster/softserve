@@ -1,12 +1,37 @@
 <!--Form for cluster creation over Rackspace-->
-{% extends 'layout.html' %}
+{% extends 'base.html' %}
 
-{% block body %}
+{% block navbar %}
+<nav class="navbar navbar-inverse">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <a class="navbar-brand" href="#">Softserve</a>
+    </div>
+		<ul class="nav navbar-nav">
+      <li class="active"><a href="#">Home</a></li>
+      <li><a href="#">Dashboard</a></li>
+    </ul>
+
+    {% if 'token' in session %}
+      <button type="button" class="btn btn-info dropdown-toggle" style="position:absolute; right:0" data-toggle="dropdown">
+        <img src="{{g.user.profile_picture}}" style="height:25px">
+        {{ g.user.username }}
+        <span class="caret"></span>
+      </button>
+      <ul class="dropdown-menu" id="login">
+        <li><a href="/logout">Logout</a></li>
+      </ul>
+			{% endif %}
+
+    </div>
+</nav>
+{% endblock %}
+{% block content %}
 
 <center>
 	<h1><strong>Welcome.Enter the info.</h1>
 		<div class="box">
-			<form action='/create-node' method="post">
+			<form action='/create-node' method="POST">
 				<fieldset>
 					<p><b>ENTER THE MACHINE NAME<br>
 						<input type="text" name="node_name"></b></p>

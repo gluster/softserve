@@ -1,10 +1,9 @@
-from flask import render_template, url_for, request, session, g, jsonify, redirect, url_for
-from sqlalchemy import func, desc
-import argparse
+from flask import render_template, url_for, request, session, g, redirect, jsonify
 
 from softserve import app, db, github
 from model import User, Node_request
-from lib import *
+from lib import create_node, organization_access_required
+
 
 @app.before_request
 def before_request():
@@ -13,18 +12,21 @@ def before_request():
         user = User.query.filter_by(token=session['token']).first()
         g.user = user
 
+
 @github.access_token_getter
 def token_getter():
     return session['token']
 
+
 @app.route('/', methods=['GET', 'POST'])
 def about():
-    return render_template('about.html') #starting page
+    return render_template('about.html')
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    print "check"
     return github.authorize(scope="read:org")
+
 
 @app.route('/github-callback')
 @github.authorized_handler
@@ -44,36 +46,35 @@ def authorized(access_token):
             db.session.commit()
 
             session['user_id'] = user.id
+    return redirect('/home')
 
-    return  redirect('/home')
 
 @app.route('/logout')
 def logout():
     session.clear()
     return redirect('/')
 
+
 @app.route('/home', methods=['GET', 'POST'])
 def home():
     return render_template('home.html')
 
-@app.route('/create-node', methods=['POST'])
-@organization_access_required('gluster')
-@service_provider_config
-def get_node_data():
 
+@app.route('/create-node', methods=['GET', 'POST'])
+#@organization_access_required('gluster')
+def get_node_data():
     if request.method == 'POST':
-        node_counts = request.form['counts']
-        node_name = request.form['node_name']
-        hours = request.form['hours']
-        pubkey = request.form['pubkey']
-        node_request = Node_request(node_name, node_counts, hours, pubkey)
+        print g.user
+        print session
+        counts = request.form['counts']
+        name = request.form['node_name']
+        hours_ = request.form['hours']
+        pubkey_ = request.form['pubkey']
+        node_request = Node_request(user_id=g.user.id, node_name=name, node_counts=counts, hours=hours_, pubkey=pubkey_)
         db.session.add(node_request)
         db.session.commit()
 
         session['node_request_id'] = node_request.id
 
-        create_node(node_counts, node_name, node_request, pubkey)
-        return redirect('/')
-
-@app.route('/info', methods=['GET', 'POST'])
-def display_info():
+        create_node(counts, name, node_request, pubkey_)
+    return jsonify({"response": "success"})
