@@ -1,7 +1,7 @@
 from flask import render_template, url_for, request, session, g, redirect, jsonify
 
 from softserve import app, db, github
-from model import User, Node_request
+from model import User, Node_request, Vm
 from lib import create_node, organization_access_required
 
 
@@ -59,6 +59,10 @@ def logout():
 def home():
     return render_template('home.html')
 
+@app.route('/dashboard', methods=['GET', 'POST'])
+def dashboard():
+    return render_template('dashboard.html')
+
 
 @app.route('/create-node', methods=['GET', 'POST'])
 #@organization_access_required('gluster')
@@ -70,7 +74,8 @@ def get_node_data():
         name = request.form['node_name']
         hours_ = request.form['hours']
         pubkey_ = request.form['pubkey']
-        node_request = Node_request(user_id=g.user.id, node_name=name, node_counts=counts, hours=hours_, pubkey=pubkey_)
+        purpose_ = request.form['purpose']
+        node_request = Node_request(user_id=g.user.id, node_name=name, node_counts=counts, hours=hours_, pubkey=pubkey_, purpose=purpose_)
         db.session.add(node_request)
         db.session.commit()
 
@@ -78,3 +83,6 @@ def get_node_data():
 
         create_node(counts, name, node_request, pubkey_)
     return jsonify({"response": "success"})
+
+    #@app.route('/delete-node', methods=['GET'])
+    #def

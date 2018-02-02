@@ -20,6 +20,7 @@ class Node_request(db.Model):
     node_counts = db.Column(db.Integer, nullable=False)
     hours = db.Column(db.Integer, nullable=False)
     pubkey = db.Column(db.VARCHAR(1024), nullable=False)
+    purpose = db.Column(db.VARCHAR(1024), nullable=False)
     vms = db.relationship('Vm', backref='details', lazy='dynamic')
     def as_dict(self):
         return{

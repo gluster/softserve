@@ -56,3 +56,43 @@ a, .navbar-default .navbar-brand, .navbar-default .navbar-nav>li>a {
 .intro-message > h3 {
     text-shadow: 2px 2px 3px rgba(0,0,0,0.6);
 }
+
+.btn-logout {
+  width: 100%;
+  padding: 3px 20px !important;
+  text-align: left !important;
+}
+
+.panel-body {
+  padding: 15px;
+}
+
+.panel-body::after, .panel-body::before{
+  box-sizing: border-box;
+}
+
+.table {
+
+    width: 100%;
+    max-width: 100%;
+    margin-bottom: 20px;
+
+}
+table {
+
+    background-color: transparent;
+
+}
+table {
+
+    border-collapse: collapse;
+    border-spacing: 0;
+
+}
+*, ::after, ::before {
+
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+
+}

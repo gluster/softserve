@@ -19,6 +19,5 @@ Bootstrap(app)
 nova = pyrax.cloudservers
 
 from views import about
-from model import User, Node_request, Vm
 
 db.create_all()
