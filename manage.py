@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import datetime
 
 from softserve import app, db
