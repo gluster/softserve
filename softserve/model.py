@@ -20,7 +20,6 @@ class Node_request(db.Model):
     node_counts = db.Column(db.Integer, nullable=False)
     hours = db.Column(db.Integer, nullable=False)
     pubkey = db.Column(db.VARCHAR(1024), nullable=False)
-    purpose = db.Column(db.VARCHAR(1024), nullable=False)
     vms = db.relationship('Vm', backref='details', lazy='dynamic')
     def as_dict(self):
         return{
@@ -32,7 +31,7 @@ class Node_request(db.Model):
 class Vm(db.Model):
     __tablename__ = 'Vm'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    ip_address = db.Column(db.VARCHAR(45), unique=True)
+    ip_address = db.Column(db.VARCHAR(45))
     vm_name = db.Column(db.String(100), unique=True, nullable=False)
     details_id = db.Column(db.Integer, db.ForeignKey('Node_request.id'))
     created_at = db.Column(db.DateTime, default=datetime.now)

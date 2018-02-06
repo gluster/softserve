@@ -1,8 +1,8 @@
-from flask import render_template, url_for, request, session, g, redirect, jsonify
+from flask import render_template, url_for, redirect, request, session, g, flash, jsonify
 
 from softserve import app, db, github
 from model import User, Node_request, Vm
-from lib import create_node, organization_access_required
+from lib import create_node, organization_access_required, delete_node
 
 
 @app.before_request
@@ -31,6 +31,7 @@ def login():
 @app.route('/github-callback')
 @github.authorized_handler
 def authorized(access_token):
+    print(access_token)
     session['token'] = access_token
     if access_token:
         user_data = github.get('user')
@@ -44,9 +45,10 @@ def authorized(access_token):
             user.email = user_data['email']
             user.name = user_data['name']
             db.session.commit()
-
-            session['user_id'] = user.id
-    return redirect('/home')
+        else:
+            user.token = access_token
+            db.session.commit()
+        return redirect('/dashboard')
 
 
 @app.route('/logout')
@@ -55,26 +57,28 @@ def logout():
     return redirect('/')
 
 
-@app.route('/home', methods=['GET', 'POST'])
+@app.route('/form', methods=['GET', 'POST'])
 def home():
     return render_template('home.html')
 
 @app.route('/dashboard', methods=['GET', 'POST'])
 def dashboard():
-    return render_template('dashboard.html')
+    vms = Vm.query.filter(Vm.state=='ACTIVE').all()
+    #vms = Vm.query.filter(Node_request.user_id == g.user.id, Vm.state == 'ACTIVE').join(Node_request).all()
+    print(vms)
+    if vms == []:
+        flash('No records found')
+    return render_template('dashboard.html', vms=vms)
 
 
 @app.route('/create-node', methods=['GET', 'POST'])
 #@organization_access_required('gluster')
 def get_node_data():
     if request.method == 'POST':
-        print g.user
-        print session
         counts = request.form['counts']
         name = request.form['node_name']
         hours_ = request.form['hours']
         pubkey_ = request.form['pubkey']
-        purpose_ = request.form['purpose']
         node_request = Node_request(user_id=g.user.id, node_name=name, node_counts=counts, hours=hours_, pubkey=pubkey_, purpose=purpose_)
         db.session.add(node_request)
         db.session.commit()
@@ -84,5 +88,12 @@ def get_node_data():
         create_node(counts, name, node_request, pubkey_)
     return jsonify({"response": "success"})
 
-    #@app.route('/delete-node', methods=['GET'])
-    #def
+
+@app.route('/delete-node/<int:vid>')
+def delete(vid):
+    machine = Vm.query.filter_by(id=vid).first()
+    name = machine.vm_name
+    delete_node(name)
+    machine.state = 'DELETED'
+    db.session.commit()
+    return redirect('/dashboard')
