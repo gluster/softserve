@@ -10,16 +10,22 @@
                     <h3>Serve yourself with the VM!</h3>
                     <hr class="intro-divider">
                     </ul>
-                    {% if 'token' not in session %}
-                      <center>
+                    <center>
+                      {% if 'token' not in session %}
                         <form action='/login' method='POST'>
                           <button type="submit" class="btn btn-info btn-login btn-md">
                             <i class="fa fa-github" aria-hidden="true"></i>
-                          Login with Github
+                            Login with Github
                           </button>
                         </form>
-                     </center>
-                    {% endif %}
+                      {% else %}
+                        <form action='/dashboard' method='POST'>
+                          <button type="submit" class="btn btn-info btn-login btn-md">
+                            My dashboard
+                          </button>
+                        </form>
+                      {% endif %}
+                    </center>
                   </div>
             </div>
         </div>

@@ -13,6 +13,9 @@ migrate = Migrate(app, db)
 github = GitHub(app)
 Bootstrap(app)
 
+pyrax.set_setting('identity_type', app.config['AUTH_SYSTEM'])
+pyrax.set_default_region(app.config['AUTH_SYSTEM_REGION '])
+pyrax.set_credentials(app.config['USERNAME'], app.config['PASSWORD'])
 nova = pyrax.cloudservers
 
 from views import about  # noqa: E402, F401

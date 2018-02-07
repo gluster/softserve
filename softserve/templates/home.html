@@ -8,51 +8,66 @@
       <a class="navbar-brand" href="#">Softserve</a>
     </div>
 		<ul class="nav navbar-nav">
-      <li class="active"><a href="#">Home</a></li>
-      <li><a href="#">Dashboard</a></li>
+      <li class="active"><a href="/dashboard">Dashboard</a></li>
     </ul>
-
-    {% if 'token' in session %}
-      <button type="button" class="btn btn-info dropdown-toggle" style="position:absolute; right:0" data-toggle="dropdown">
-        <img src="{{g.user.profile_picture}}" style="height:25px">
-        {{ g.user.username }}
-        <span class="caret"></span>
-      </button>
-      <ul class="dropdown-menu" id="login">
-        <li><a href="/logout">Logout</a></li>
-      </ul>
-			{% endif %}
-
-    </div>
+    <ul class="nav navbar-nav navbar-right">
+      <li class="nav-item dropdown">
+        {% if 'token' in session %}
+        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          {{ g.user.name }}
+          <span class="caret"></span>
+        </a>
+        <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+          <a class="dropdown-item" href="/logout">Logout</a>
+        </div>
+        {% endif %}
+      </li>
+    </ul>
+  </div>
 </nav>
 {% endblock %}
+
 {% block content %}
-
-<center>
-	<h1><strong>Welcome.Enter the info.</h1>
-		<div class="box">
-			<form action='/create-node' method="POST">
-				<fieldset>
-					<p><b>ENTER THE MACHINE NAME<br>
-						<input type="text" name="node_name"></b></p>
-						<p><b>ENTER THE NUMBER OF MACHINES<br>
-							<input type="text" name="counts"></b></p>
-						<p><b>ENTER THE LIFE OF MACHINE(IN HOURS[max 4 hours])<br>
-							<input type="text" name="hours" max='4'></b></p>
-						<p>
-							<b>UPLOAD SSH KEY<br>
-								<textarea cols='40' rows='4' name='pubkey'>
-								</textarea>
-						</p>
-						<p><input type="submit" value="CREATE"></p>
-				</fieldset>
-			</form>
+<div class="container">
+<h3><strong>Welcome {{ g.user.name }}. Enter the info.</h3>
+<form action='/create-node' method="POST">
+  <div class='row'>
+    <div class="form-group col-md-5">
+       <label for="node_name">Machine name</label>
+			 <input type="text" class="form-control" id="node_name">
+     </div>
+  </div>
+  <div class='row'>
+		<div class="form-group col-md-5">
+      <label for="hours">Number of hours</label>
+			<select class="form-control" id="hours">
+  			<option>1</option>
+  			<option>2</option>
+  			<option>3</option>
+  			<option>4</option>
+			</select>
+    </div>
+  </div>
+  <div class="row">
+	   <div class="form-group">
+       <div class="col-md-5">
+         <label for="counts">Number of machines</label>
+				 <input type="text" class="form-control" id="counts">
+         <small id="maximumAllowedMachines" class="text-muted">
+            Limit: 5 machines at a time
+         </small>
+			</div>
 		</div>
-
-	</center>
-<script>
-$("#btn-round").click(function () {
-	$("#uploadfile").click();
-});
-</script>
+  </div>
+  <div class='row'>
+    <div class="form-group">
+      <div class="col-md-5">
+        <label for="publicKey">Upload SSH public key</label>
+  			<textarea class="form-control" id="pubkey" rows="3"></textarea>
+      </div>
+    </div>
+  </div>
+  <button type="submit" class="btn btn-primary">CREATE</button>
+</form>
+</div>
 {% endblock %}
