@@ -11,17 +11,11 @@
       <li class="active"><a href="/dashboard">Dashboard</a></li>
     </ul>
     <ul class="nav navbar-nav navbar-right">
-      <li class="nav-item dropdown">
+
         {% if 'token' in session %}
-        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-          {{ g.user.name }}
-          <span class="caret"></span>
-        </a>
-        <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-          <a class="dropdown-item" href="/logout">Logout</a>
-        </div>
+          <li><a href="#"><span class="glyphicon glyphicon-log-out"></span> Logout</a></li>
         {% endif %}
-      </li>
+      
     </ul>
   </div>
 </nav>

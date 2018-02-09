@@ -99,13 +99,19 @@ def get_node_data():
 # @organization_access_required('gluster')
 def delete(vid=None):
     if vid is None:
-        print("Nothing")
+        vms = Vm.query.filter(NodeRequest.user_id == g.user.id,
+                              Vm.state == 'ACTIVE') \
+              .join(NodeRequest).join(User).all()
+
+        for m in vms:
+            name = str(m.vm_name)
+            delete_node(name)
+            machine.state = 'DELETED'
+            db.session.commit()
     else:
-        print("error")
-    machine = Vm.query.filter_by(id=vid).first()
-    name = str(machine.vm_name)
-    print(name)
-    delete_node(name)
-    machine.state = 'DELETED'
-    db.session.commit()
+        machine = Vm.query.filter_by(id=vid).first()
+        name = str(machine.vm_name)
+        delete_node(name)
+        machine.state = 'DELETED'
+        db.session.commit()
     return redirect('/dashboard')
