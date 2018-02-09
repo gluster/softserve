@@ -2,20 +2,20 @@
 import datetime
 
 from softserve import app, db
-from softserve.model import User, Node_request, Vm
+from softserve.model import User, NodeRequest, Vm
 from softserve.lib import delete_node
 
 
 @app.shell_context_processor
 def make_shell_context():
-    return dict(db=db, User=User, Node_request=Node_request, Vm=Vm)
+    return dict(db=db, User=User, NodeRequest=NodeRequest, Vm=Vm)
 
 
 @app.cli.command()
 def shutdown_check():
     '''Command to shut down the VM when exceeding the time limit'''
     vms = Vm.query.filter_by(state='ACTIVE').all()
-    if vms is None:
+    if vms == []:
         pass
     else:
         for vm in vms:

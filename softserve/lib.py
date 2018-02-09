@@ -4,6 +4,7 @@ Shared library functions for softserve.
 
 import time
 import re
+import os
 from functools import wraps
 from flask import jsonify
 from softserve import db, github, nova
@@ -19,10 +20,9 @@ def organization_access_required(org):
         @wraps(func)
         def wrap(*args, **kwargs):
             orgs = github.get('user/orgs')
-            print orgs
+            print(orgs)
             for org_ in orgs:
                 if org_['login'] == org:
-                    print "check"
                     return func(*args, **kwargs)
             return jsonify({"response": "You must be the member of gluster \
                                          organization on Github to serve \
@@ -36,16 +36,20 @@ def create_node(counts, name, node_request, pubkey):
     '''
     Create a node in the cloud provider
     '''
-    flavor = nova.flavors.find(name='2048MB')
-    image = nova.images.find(name='CentOS7')
+    flavor = nova.flavors.find(name='512MB Standard Instance')
+    image = nova.images.find(name='CentOS 7 (PVHVM)')
 
     # create the nodes
-    for count in range(counts):
+    print(counts)
+    public_key = open(os.path.expanduser("~/.ssh/id_rsa.pub")).read()
+    keypair = nova.keypairs.create("mykeypair", public_key)
+    for count in range(int(counts)):
         vm_name = str(count+1)+'.'+name
         node = nova.servers.create(name=vm_name, flavor=flavor.id,
-                                   image=image.id, key_name=pubkey)
+                                   image=image.id, key_name=keypair.name)
 
         # wait for server to get active
+        print(node.status)
         while node.status == 'BUILD':
             time.sleep(5)
             node = nova.servers.get(node.id)

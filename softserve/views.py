@@ -1,7 +1,7 @@
 from flask import render_template, redirect, request, session, g, flash, jsonify
 
 from softserve import app, db, github
-from model import User, Node_request, Vm
+from model import User, NodeRequest, Vm
 from lib import create_node, organization_access_required, delete_node
 
 
@@ -64,17 +64,19 @@ def home():
 @app.route('/dashboard', methods=['GET', 'POST'])
 def dashboard():
     # vms = Vm.query.filter(Vm.state=='ACTIVE').all()
-    vms = Vm.query.filter(Node_request.user_id == g.user.id, Vm.state == 'ACTIVE').join(Node_request).all()
+    vms = Vm.query.filter(NodeRequest.user_id == g.user.id,
+                          Vm.state == 'ACTIVE') \
+          .join(NodeRequest).join(User).all()
     print(vms)
     if vms == []:
         flash('No records found')
     return render_template('dashboard.html', vms=vms)
 
 
-@app.route('/create-node', methods=['GET', 'POST'])
-@organization_access_required('gluster')
+@app.route('/create_node', methods=['GET', 'POST'])
+# @organization_access_required('gluster')
 def get_node_data():
-    if request.method == 'POST':
+    if request.method == "POST":
         counts = request.form['counts']
         name = request.form['node_name']
         hours_ = request.form['hours']
@@ -88,16 +90,21 @@ def get_node_data():
         db.session.add(node_request)
         db.session.commit()
 
-        session['node_request_id'] = node_request.id
-
         create_node(counts, name, node_request, pubkey_)
     return jsonify({"response": "success"})
 
 
 @app.route('/delete-node/<int:vid>')
-def delete(vid):
+@app.route('/delete-node')
+# @organization_access_required('gluster')
+def delete(vid=None):
+    if vid is None:
+        print("Nothing")
+    else:
+        print("error")
     machine = Vm.query.filter_by(id=vid).first()
-    name = machine.vm_name
+    name = str(machine.vm_name)
+    print(name)
     delete_node(name)
     machine.state = 'DELETED'
     db.session.commit()
