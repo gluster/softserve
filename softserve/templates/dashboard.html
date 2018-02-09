@@ -13,7 +13,14 @@
     </ul>
     <ul class="nav navbar-nav navbar-right">
       {% if 'token' in session %}
-        <li><a href="/logout"><span class="glyphicon glyphicon-log-out"></span> Logout</a></li>
+        <li class="dropdown">
+          <a class=" dropdown-toggle" data-toggle="dropdown" aria-expanded="true">
+            {{ g.user.name }}<span class="caret"></span>
+          </a>
+          <ul class="dropdown-menu">
+            <li><a href="/logout"><span class="glyphicon glyphicon-log-out"></span> Logout</a></li>
+          </ul>
+        </li>
       {% endif %}
     </ul>
   </div>
@@ -46,20 +53,16 @@
           {% endif %}
           {% endwith %}
           {% else %}
-          <thead>
-            <tr>
-              <th>VM name</th>
-              <th>IP address</th>
-              <th>Creation time</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-
-
-
-
-                {% for m in vms %}
+            <thead>
+              <tr>
+                <th>VM name</th>
+                <th>IP address</th>
+                <th>Creation time</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for m in vms %}
                 <tr>
                   <td><h4>{{ m.vm_name }}</h4></td>
                   <td><h4>{{ m.ip_address }}</h4></td>
@@ -68,11 +71,11 @@
                     <a class='btn btn-info btn-lg' href="/delete-node/{{ m.id }}" role="button">DELETE</a>
                   </td>
                 </tr>
-                {% endfor %}
-              {% endif %}
-
-          </tbody>
-      </table>
+              {% endfor %}
+            </tbody>
+          {% endif %}
+        </table>
+      </div>
+    </div>
   </div>
-</div>
 {% endblock %}

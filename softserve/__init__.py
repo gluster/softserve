@@ -16,7 +16,7 @@ Bootstrap(app)
 pyrax.set_setting('identity_type', app.config['AUTH_SYSTEM'])
 pyrax.set_default_region(app.config['AUTH_SYSTEM_REGION'])
 pyrax.set_credential_file("/home/dkhandel/.rackspace_cloud_credentials")
-#pyrax.set_credentials(app.config['USERNAME'], app.config['API_KEY'])
+# pyrax.set_credentials(app.config['USERNAME'], app.config['API_KEY'])
 nova = pyrax.cloudservers
 
 from views import about  # noqa: E402, F401

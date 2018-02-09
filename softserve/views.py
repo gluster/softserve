@@ -61,6 +61,7 @@ def logout():
 def home():
     return render_template('home.html')
 
+
 @app.route('/dashboard', methods=['GET', 'POST'])
 def dashboard():
     # vms = Vm.query.filter(Vm.state=='ACTIVE').all()
@@ -106,7 +107,7 @@ def delete(vid=None):
         for m in vms:
             name = str(m.vm_name)
             delete_node(name)
-            machine.state = 'DELETED'
+            m.state = 'DELETED'
             db.session.commit()
     else:
         machine = Vm.query.filter_by(id=vid).first()
