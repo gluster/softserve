@@ -29,7 +29,7 @@ class NodeRequest(db.Model):
     __tablename__ = 'node_request'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    node_name = db.Column(db.String(100), unique=True, nullable=False)
+    node_name = db.Column(db.String(100), nullable=False)
     node_counts = db.Column(db.Integer, nullable=False)
     hours = db.Column(db.Integer, nullable=False)
     pubkey = db.Column(db.VARCHAR(1024), nullable=False)
@@ -47,7 +47,7 @@ class Vm(db.Model):
     __tablename__ = 'vm'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     ip_address = db.Column(db.VARCHAR(45))
-    vm_name = db.Column(db.String(100), unique=True, nullable=False)
+    vm_name = db.Column(db.String(100), unique=False, nullable=False)
     details_id = db.Column(db.Integer, db.ForeignKey('node_request.id'))
     created_at = db.Column(db.DateTime, default=datetime.now)
     state = db.Column(db.String(10))

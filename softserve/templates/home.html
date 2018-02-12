@@ -8,14 +8,19 @@
       <a class="navbar-brand" href="#">Softserve</a>
     </div>
 		<ul class="nav navbar-nav">
-      <li class="active"><a href="/dashboard">Dashboard</a></li>
+      <li><a href="/dashboard">Dashboard</a></li>
     </ul>
     <ul class="nav navbar-nav navbar-right">
-
-        {% if 'token' in session %}
-          <li><a href="#"><span class="glyphicon glyphicon-log-out"></span> Logout</a></li>
-        {% endif %}
-      
+      {% if 'token' in session %}
+        <li class="dropdown">
+          <a class=" dropdown-toggle" data-toggle="dropdown" aria-expanded="true">
+            {{ g.user.name }}<span class="caret"></span>
+          </a>
+          <ul class="dropdown-menu">
+            <li><a href="/logout"><span class="glyphicon glyphicon-log-out"></span> Logout</a></li>
+          </ul>
+        </li>
+      {% endif %}
     </ul>
   </div>
 </nav>
@@ -24,12 +29,23 @@
 {% block content %}
 <div class="container">
 <h3><strong>Welcome {{ g.user.name }}. Enter the info.</h3>
+  {% with messages = get_flashed_messages() %}
+  {% if messages %}
+    <ul class=flashes>
+    {% for message in messages %}
+      <div class="alert alert-warning">
+        <li>{{ message }}</li>
+      </div>
+    {% endfor %}
+    </ul>
+  {% endif %}
+  {% endwith %}
   <form action="/create_node" method="post">
   <div class='row'>
     <div class="form-group col-md-5">
-       <label for="node_name">Machine name</label>
+       <label for="node_name">Machines label</label>
 			 <input type="text" class="form-control" name="node_name">
-     </div>
+    </div>
   </div>
   <div class='row'>
 		<div class="form-group col-md-5">
@@ -61,7 +77,8 @@
       </div>
     </div>
   </div>
-  <button type="submit" class="btn btn-primary">CREATE</button>
+  <br/>
+  <button type="submit" class="btn btn-info btn-lg">CREATE</button>
 </form>
 </div>
 {% endblock %}

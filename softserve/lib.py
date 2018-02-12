@@ -41,10 +41,9 @@ def create_node(counts, name, node_request, pubkey):
 
     # create the nodes
     print(counts)
-    public_key = open(os.path.expanduser("~/.ssh/id_rsa.pub")).read()
-    keypair = nova.keypairs.create("mykeypair", public_key)
+    keypair = nova.keypairs.create(name, pubkey)
     for count in range(int(counts)):
-        vm_name = str(count+1)+'.'+name
+        vm_name = name+'.'+str(count+1)
         node = nova.servers.create(name=vm_name, flavor=flavor.id,
                                    image=image.id, key_name=keypair.name)
 

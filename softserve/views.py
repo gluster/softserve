@@ -59,12 +59,17 @@ def logout():
 
 @app.route('/form', methods=['GET', 'POST'])
 def home():
+    count = db.session.query(func.count(Vm.id)).scalar()
+    if count == 5:
+        flash('You are in Queue. Try again later')
+    else:
+        (5-count) = n
+        flash('You can request upto {} machines').format(n)
     return render_template('home.html')
 
 
 @app.route('/dashboard', methods=['GET', 'POST'])
 def dashboard():
-    # vms = Vm.query.filter(Vm.state=='ACTIVE').all()
     vms = Vm.query.filter(NodeRequest.user_id == g.user.id,
                           Vm.state == 'ACTIVE') \
           .join(NodeRequest).join(User).all()
@@ -82,17 +87,21 @@ def get_node_data():
         name = request.form['node_name']
         hours_ = request.form['hours']
         pubkey_ = request.form['pubkey']
-        node_request = NodeRequest(
-            user_id=g.user.id,
-            node_name=name,
-            node_counts=counts,
-            hours=hours_,
-            pubkey=pubkey_)
-        db.session.add(node_request)
-        db.session.commit()
-
-        create_node(counts, name, node_request, pubkey_)
-    return jsonify({"response": "success"})
+        n = NodeRequest.query.filter_by(node_name=name).first()
+        if n is None:
+            node_request = NodeRequest(
+                user_id=g.user.id,
+                node_name=name,
+                node_counts=counts,
+                hours=hours_,
+                pubkey=pubkey_)
+            db.session.add(node_request)
+            db.session.commit()
+            create_node(counts, name, node_request, pubkey_)
+            flash('Your VM has been created. Go back to Dashboard')
+        else:
+            flash('Machine label already exists. Please choose different name.')
+    return redirect('/form')
 
 
 @app.route('/delete-node/<int:vid>')
