@@ -1,4 +1,5 @@
-from flask import render_template, redirect, request, session, g, flash, jsonify # noqa: E501
+from flask import render_template, redirect, request, session, g, flash  # noqa: E50
+from sqlalchemy import func
 
 from softserve import app, db, github
 from model import User, NodeRequest, Vm
@@ -80,7 +81,7 @@ def dashboard():
 
 
 @app.route('/create_node', methods=['GET', 'POST'])
-# @organization_access_required('gluster')
+@organization_access_required('gluster')
 def get_node_data():
     if request.method == "POST":
         counts = request.form['counts']
@@ -107,7 +108,7 @@ def get_node_data():
 
 @app.route('/delete-node/<int:vid>')
 @app.route('/delete-node')
-# @organization_access_required('gluster')
+@organization_access_required('gluster')
 def delete(vid=None):
     if vid is None:
         vms = Vm.query.filter(NodeRequest.user_id == g.user.id,
