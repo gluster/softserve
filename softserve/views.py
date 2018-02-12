@@ -1,4 +1,4 @@
-from flask import render_template, redirect, request, session, g, flash, jsonify
+from flask import render_template, redirect, request, session, g, flash, jsonify # noqa: E501
 
 from softserve import app, db, github
 from model import User, NodeRequest, Vm
@@ -63,7 +63,7 @@ def home():
     if count == 5:
         flash('You are in Queue. Try again later')
     else:
-        (5-count) = n
+        n = (5-count)
         flash('You can request upto {} machines').format(n)
     return render_template('home.html')
 
@@ -100,7 +100,8 @@ def get_node_data():
             create_node(counts, name, node_request, pubkey_)
             flash('Your VM has been created. Go back to Dashboard')
         else:
-            flash('Machine label already exists. Please choose different name.')
+            flash('Machine label already exists. \
+                   Please choose different name.')
     return redirect('/form')
 
 

@@ -4,7 +4,6 @@ Shared library functions for softserve.
 
 import time
 import re
-import os
 from functools import wraps
 from flask import jsonify
 from softserve import db, github, nova

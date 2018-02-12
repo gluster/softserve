@@ -22,4 +22,4 @@ nova = pyrax.cloudservers
 from views import about  # noqa: E402, F401
 from model import User, NodeRequest, Vm  # noqa: E402, F401
 
-db.create_all()
+# db.create_all()
