@@ -29,12 +29,23 @@
 
 {% block content %}
 <div class="container">
+  {% with messages = get_flashed_messages() %}
+  {% if messages %}
+    <ul class=flashes>
+    {% for message in messages %}
+      <div class="alert alert-warning">
+      <li>{{ message }}</li>
+      </div>
+    {% endfor %}
+    </ul>
+  {% endif %}
+  {% endwith %}
   <h2>Active machines</h2>
     <p>
     <a class="btn btn-info btn-lg" href="/form" role="button" style="margin-bottom: ($spacer * .5) !important;">
       <span class="glyphicon glyphicon-triangle-left"></span>
       START LAB</a>
-    <a class="btn btn-info btn-lg" href="#" role="button"style="matgin-bottom: ($spacer * .5) !important;">
+    <a class="btn btn-info btn-lg" href="#" role="button" style="matgin-bottom: ($spacer * .5) !important;">
       <span class="glyphicon glyphicon-trash"></span>
       DELETE LAB</a>
     </p>

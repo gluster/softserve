@@ -61,12 +61,13 @@ def logout():
 @app.route('/form', methods=['GET', 'POST'])
 def home():
     count = db.session.query(func.count(Vm.id)).scalar()
-    if count == 5:
+    if count >= 5:
         flash('You are in Queue. Try again later')
+        return redirect('/dashboard')
     else:
         n = (5-count)
-        flash('You can request upto {} machines').format(n)
-    return render_template('home.html')
+        flash('You can request upto {} machines'.format(n))
+        return render_template('home.html', n=n)
 
 
 @app.route('/dashboard', methods=['GET', 'POST'])
@@ -81,7 +82,7 @@ def dashboard():
 
 
 @app.route('/create_node', methods=['GET', 'POST'])
-@organization_access_required('gluster')
+# @organization_access_required('gluster')
 def get_node_data():
     if request.method == "POST":
         counts = request.form['counts']
@@ -98,7 +99,7 @@ def get_node_data():
                 pubkey=pubkey_)
             db.session.add(node_request)
             db.session.commit()
-            create_node(counts, name, node_request, pubkey_)
+            # create_node(counts, name, node_request, pubkey_)
             flash('Your VM has been created. Go back to Dashboard')
         else:
             flash('Machine label already exists. \

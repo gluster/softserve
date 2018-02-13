@@ -29,6 +29,7 @@
 {% block content %}
 <div class="container">
 <h3><strong>Welcome {{ g.user.name }}. Enter the info.</h3>
+  <div id="timeoutMessage">
   {% with messages = get_flashed_messages() %}
   {% if messages %}
     <ul class=flashes>
@@ -40,6 +41,7 @@
     </ul>
   {% endif %}
   {% endwith %}
+</div>
   <form action="/create_node" method="post">
   <div class='row'>
     <div class="form-group col-md-5">
@@ -62,7 +64,7 @@
 	   <div class="form-group">
        <div class="col-md-5">
          <label for="counts">Number of machines</label>
-				 <input type="text" class="form-control" name="counts">
+				 <input type="number" min="1" max= {{ n }} class="form-control" name="counts">
          <small id="maximumAllowedMachines" class="text-muted">
             Limit: 5 machines at a time
          </small>
@@ -81,4 +83,10 @@
   <button type="submit" class="btn btn-info btn-lg">CREATE</button>
 </form>
 </div>
+
+<script>
+  setTimeout(function() {
+          $('#timeoutMessage').fadeOut('fast');
+        }, 3000);
+</script>
 {% endblock %}
