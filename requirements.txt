@@ -6,3 +6,4 @@ requests
 GitHub-Flask
 Flask-Script
 Flask-Bootstrap
+sshpubkeys
