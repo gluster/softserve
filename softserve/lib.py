@@ -4,6 +4,7 @@ Shared library functions for softserve.
 
 import time
 import re
+from sshpubkeys import SSHKey
 from functools import wraps
 from flask import jsonify
 from softserve import db, github, nova
@@ -35,14 +36,22 @@ def create_node(counts, name, node_request, pubkey):
     '''
     Create a node in the cloud provider
     '''
-    flavor = nova.flavors.find(name='512MB Standard Instance')
+    flavor = nova.flavors.find(name='1 GB General Purpose v1')
     image = nova.images.find(name='CentOS 7 (PVHVM)')
 
     # create the nodes
+
+    '''Validating the SSH public key'''
+    ssh = SSHKey(pubkey, strict=True)
+    try:
+        ssh.parse()
+    except:
+        raise Exception("Unable to validate SSH")
+    print ("checking the handling")
     print(counts)
     keypair = nova.keypairs.create(name, pubkey)
     for count in range(int(counts)):
-        vm_name = name+'.'+str(count+1)
+        vm_name = 'softserve-'+name+'.'+str(count+1)
         node = nova.servers.create(name=vm_name, flavor=flavor.id,
                                    image=image.id, key_name=keypair.name)
 
@@ -61,12 +70,6 @@ def create_node(counts, name, node_request, pubkey):
                 machine.details = node_request
                 db.session.add(machine)
                 db.session.commit()
-                # Storing the IP address of the machines in a file(filename is
-                # same as that of the node name given by user) for future
-                # purpose
-                f = open(name, 'a')
-                f.write("{}\n".format(network))
-                f.close()
 
 
 def delete_node(vm_name):

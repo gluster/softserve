@@ -60,9 +60,10 @@ def logout():
 
 @app.route('/form', methods=['GET', 'POST'])
 def home():
-    count = db.session.query(func.count(Vm.id)).scalar()
+    count = db.session.query(func.count(Vm.id)) \
+            .filter_by(state = 'ACTIVE').scalar()
     if count >= 5:
-        flash('You are in Queue. Try again later')
+        flash('Oops!Limit got over. Try again later')
         return redirect('/dashboard')
     else:
         n = (5-count)
@@ -84,32 +85,41 @@ def dashboard():
 @app.route('/create_node', methods=['GET', 'POST'])
 # @organization_access_required('gluster')
 def get_node_data():
-    if request.method == "POST":
-        counts = request.form['counts']
-        name = request.form['node_name']
-        hours_ = request.form['hours']
-        pubkey_ = request.form['pubkey']
-        n = NodeRequest.query.filter_by(node_name=name).first()
-        if n is None:
-            node_request = NodeRequest(
-                user_id=g.user.id,
-                node_name=name,
-                node_counts=counts,
-                hours=hours_,
-                pubkey=pubkey_)
-            db.session.add(node_request)
-            db.session.commit()
-            # create_node(counts, name, node_request, pubkey_)
-            flash('Your VM has been created. Go back to Dashboard')
-        else:
-            flash('Machine label already exists. \
-                   Please choose different name.')
-    return redirect('/form')
+    count = db.session.query(func.count(Vm.id)) \
+            .filter_by(state = 'ACTIVE').scalar()
+    if count >=5 :
+        flash('Unable to create machine.Limit got over!')
+        return render_template('home.html')
+    else:
+        if request.method == "POST":
+            counts = request.form['counts']
+            name = request.form['node_name']
+            hours_ = request.form['hours']
+            pubkey_ = request.form['pubkey']
+            n = NodeRequest.query.filter_by(node_name=name).first()
+            if n is None:
+                node_request = NodeRequest(
+                    user_id=g.user.id,
+                    node_name=name,
+                    node_counts=counts,
+                    hours=hours_,
+                    pubkey=pubkey_)
+                try:
+                    create_node(counts, name, node_request, pubkey_)
+                except:
+                    return "Invalid SSH Key or invalid machine label", 400
+                db.session.add(node_request)
+                db.session.commit()
+                flash('Your VM has been created. Go back to Dashboard')
+            else:
+                flash('Machine label already exists. \
+                       Please choose different name.')
+        return render_template('home.html')
 
 
 @app.route('/delete-node/<int:vid>')
 @app.route('/delete-node')
-@organization_access_required('gluster')
+# organization_access_required('gluster')
 def delete(vid=None):
     if vid is None:
         vms = Vm.query.filter(NodeRequest.user_id == g.user.id,

@@ -42,10 +42,10 @@
   {% endwith %}
   <h2>Active machines</h2>
     <p>
-    <a class="btn btn-info btn-lg" href="/form" role="button" style="margin-bottom: ($spacer * .5) !important;">
+    <a class="btn btn-info btn-lg" href="/form" role="button">
       <span class="glyphicon glyphicon-triangle-left"></span>
       START LAB</a>
-    <a class="btn btn-info btn-lg" href="#" role="button" style="matgin-bottom: ($spacer * .5) !important;">
+    <a class="btn btn-info btn-lg" href="#" role="button" class='confirmation'>
       <span class="glyphicon glyphicon-trash"></span>
       DELETE LAB</a>
     </p>
@@ -79,7 +79,7 @@
                   <td><h4>{{ m.ip_address }}</h4></td>
                   <td><h4>{{ m.created_at }}</h4></td>
                   <td>
-                    <a class='btn btn-info btn-lg' href="/delete-node/{{ m.id }}" role="button">DELETE</a>
+                    <a class='btn btn-info btn-lg' href="/delete-node/{{ m.id }}" role="button" class='confirmation'>DELETE</a>
                   </td>
                 </tr>
               {% endfor %}
@@ -89,4 +89,10 @@
       </div>
     </div>
   </div>
+
+<script>
+  $('.confirmation').on('click', function () {
+      return confirm('Are you sure?');
+  });
+</script>
 {% endblock %}
