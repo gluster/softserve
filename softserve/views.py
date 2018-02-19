@@ -83,12 +83,12 @@ def dashboard():
 
 
 @app.route('/create_node', methods=['GET', 'POST'])
-# @organization_access_required('gluster')
+@organization_access_required('gluster')
 def get_node_data():
     count = db.session.query(func.count(Vm.id)) \
             .filter_by(state = 'ACTIVE').scalar()
-    if count >=5 :
-        flash('Unable to create machine.Limit got over!')
+    if count >=5 or request.form['counts']>=5 or request.form['hours']>=4 :
+        flash('You are requesting more then the predefined limit.')
         return render_template('home.html')
     else:
         if request.method == "POST":
@@ -119,7 +119,7 @@ def get_node_data():
 
 @app.route('/delete-node/<int:vid>')
 @app.route('/delete-node')
-# organization_access_required('gluster')
+organization_access_required('gluster')
 def delete(vid=None):
     if vid is None:
         vms = Vm.query.filter(NodeRequest.user_id == g.user.id,
