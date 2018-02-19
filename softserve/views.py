@@ -119,7 +119,7 @@ def get_node_data():
 
 @app.route('/delete-node/<int:vid>')
 @app.route('/delete-node')
-organization_access_required('gluster')
+@organization_access_required('gluster')
 def delete(vid=None):
     if vid is None:
         vms = Vm.query.filter(NodeRequest.user_id == g.user.id,
