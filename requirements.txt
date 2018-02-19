@@ -1,6 +1,7 @@
 Flask
 Flask-SQLAlchemy
 Flask-Migrate
+pytz
 pyrax
 requests
 GitHub-Flask
