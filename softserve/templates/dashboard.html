@@ -54,41 +54,37 @@
     <div class="panel-body">
       <table class="table table-striped table-condensed">
         {% if vms == [] %}
-          {% with messages = get_flashed_messages() %}
-          {% if messages %}
-            <ul class=flashes>
-            {% for message in messages %}
-              <li>{{ message }}</li>
-            {% endfor %}
-            </ul>
-          {% endif %}
-          {% endwith %}
-          {% else %}
-            <thead>
+          <tbody>
+            <tr>
+              <td><h4>No records found</h4></td>
+            </tr>
+          </tbody>
+        {% else %}
+          <thead>
+            <tr>
+              <th>VM name</th>
+              <th>IP address</th>
+              <th>Creation time</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for m in vms %}
               <tr>
-                <th>VM name</th>
-                <th>IP address</th>
-                <th>Creation time</th>
-                <th>Action</th>
+                <td><h4>{{ m.vm_name }}</h4></td>
+                <td><h4>{{ m.ip_address }}</h4></td>
+                <td><h4>{{ m.created_at }}</h4></td>
+                <td>
+                  <a class='btn btn-info btn-lg' href="/delete-node/{{ m.id }}" role="button" class='confirmation'>DELETE</a>
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {% for m in vms %}
-                <tr>
-                  <td><h4>{{ m.vm_name }}</h4></td>
-                  <td><h4>{{ m.ip_address }}</h4></td>
-                  <td><h4>{{ m.created_at }}</h4></td>
-                  <td>
-                    <a class='btn btn-info btn-lg' href="/delete-node/{{ m.id }}" role="button" class='confirmation'>DELETE</a>
-                  </td>
-                </tr>
-              {% endfor %}
-            </tbody>
-          {% endif %}
-        </table>
-      </div>
+            {% endfor %}
+          </tbody>
+        {% endif %}
+      </table>
     </div>
   </div>
+</div>
 
 <script>
   $('.confirmation').on('click', function () {

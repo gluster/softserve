@@ -76,9 +76,6 @@ def dashboard():
     vms = Vm.query.filter(NodeRequest.user_id == g.user.id,
                           Vm.state == 'ACTIVE') \
           .join(NodeRequest).join(User).all()
-    print(vms)
-    if vms == []:
-        flash('No records found')
     return render_template('dashboard.html', vms=vms)
 
 
