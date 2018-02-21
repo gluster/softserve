@@ -80,7 +80,7 @@ def dashboard():
 
 
 @app.route('/create_node', methods=['GET', 'POST'])
-@organization_access_required('gluster')
+#@organization_access_required('gluster')
 def get_node_data():
     count = db.session.query(func.count(Vm.id)) \
             .filter_by(state = 'ACTIVE').scalar()
@@ -103,10 +103,7 @@ def get_node_data():
                     pubkey=pubkey_)
                 db.session.add(node_request)
                 db.session.commit()
-                try:
-                    create_node(counts, name, node_request, pubkey_)
-                except:
-                    return "Invalid SSH Key or invalid machine label", 400
+                create_node(counts, name, node_request, pubkey_)
                 flash('Your VM has been created. Go back to Dashboard')
             else:
                 flash('Machine label already exists. \

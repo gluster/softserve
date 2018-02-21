@@ -59,7 +59,7 @@ def create_node(counts, name, node_request, pubkey):
             time.sleep(5)
             node = nova.servers.get(node.id)
 
-        # get ip_address of the active node and store it in a file
+        # get ip_address of the active node
         for network in node.networks['public']:
             if re.match(r'\d+\.\d+\.\d+\.\d+', network):
                 machine = Vm(ip_address=network,
