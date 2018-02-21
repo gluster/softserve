@@ -84,8 +84,8 @@ def dashboard():
 def get_node_data():
     count = db.session.query(func.count(Vm.id)) \
             .filter_by(state = 'ACTIVE').scalar()
-    if count >=5 or request.form['counts']>=5 or request.form['hours']>=4 :
-        flash('You are requesting more then the predefined limit.')
+    if count >=5:
+        flash('Limit got over!')
         return render_template('home.html')
     else:
         if request.method == "POST":
