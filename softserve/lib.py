@@ -47,8 +47,6 @@ def create_node(counts, name, node_request, pubkey):
         ssh.parse()
     except:
         raise Exception("Unable to validate SSH")
-    print ("checking the handling")
-    print(counts)
     keypair = nova.keypairs.create(name, pubkey)
     for count in range(int(counts)):
         vm_name = 'softserve-'+name+'.'+str(count+1)

@@ -101,12 +101,12 @@ def get_node_data():
                     node_counts=counts,
                     hours=hours_,
                     pubkey=pubkey_)
+                db.session.add(node_request)
+                db.session.commit()
                 try:
                     create_node(counts, name, node_request, pubkey_)
                 except:
                     return "Invalid SSH Key or invalid machine label", 400
-                db.session.add(node_request)
-                db.session.commit()
                 flash('Your VM has been created. Go back to Dashboard')
             else:
                 flash('Machine label already exists. \
