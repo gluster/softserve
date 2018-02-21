@@ -101,10 +101,10 @@ def get_node_data():
                     node_counts=counts,
                     hours=hours_,
                     pubkey=pubkey_)
+                create_node.apply_async((counts, name, node_request, pubkey_), seriaizer='pickle')
                 db.session.add(node_request)
                 db.session.commit()
-                create_node(counts, name, node_request, pubkey_)
-                flash('Your VM has been created. Go back to Dashboard')
+                flash('Creating your vm..')
             else:
                 flash('Machine label already exists. \
                        Please choose different name.')

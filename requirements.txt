@@ -8,3 +8,5 @@ GitHub-Flask
 Flask-Script
 Flask-Bootstrap
 sshpubkeys
+celery
+redis

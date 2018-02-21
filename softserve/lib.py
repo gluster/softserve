@@ -7,7 +7,7 @@ import re
 from sshpubkeys import SSHKey
 from functools import wraps
 from flask import jsonify
-from softserve import db, github, nova
+from softserve import db, github, nova, celery
 from softserve.model import Vm
 
 
@@ -32,6 +32,7 @@ def organization_access_required(org):
     return decorator
 
 
+@celery.task
 def create_node(counts, name, node_request, pubkey):
     '''
     Create a node in the cloud provider
