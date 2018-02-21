@@ -8,7 +8,7 @@ from sshpubkeys import SSHKey
 from functools import wraps
 from flask import jsonify
 from softserve import db, github, nova, celery
-from softserve.model import Vm
+from softserve.model import Vm, NodeRequest
 
 
 def organization_access_required(org):
@@ -20,7 +20,6 @@ def organization_access_required(org):
         @wraps(func)
         def wrap(*args, **kwargs):
             orgs = github.get('user/orgs')
-            print(orgs)
             for org_ in orgs:
                 if org_['login'] == org:
                     return func(*args, **kwargs)
@@ -32,13 +31,14 @@ def organization_access_required(org):
     return decorator
 
 
-@celery.task
+@celery.task()
 def create_node(counts, name, node_request, pubkey):
     '''
     Create a node in the cloud provider
     '''
     flavor = nova.flavors.find(name='1 GB General Purpose v1')
     image = nova.images.find(name='CentOS 7 (PVHVM)')
+    node_request = NodeRequest.query.get(node_request)
 
     # create the nodes
 
@@ -55,7 +55,6 @@ def create_node(counts, name, node_request, pubkey):
                                    image=image.id, key_name=keypair.name)
 
         # wait for server to get active
-        print(node.status)
         while node.status == 'BUILD':
             time.sleep(5)
             node = nova.servers.get(node.id)

@@ -2,3 +2,4 @@
 env
 test
 .pylintrc
+instance/application.cfg

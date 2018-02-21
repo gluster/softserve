@@ -32,7 +32,6 @@ def login():
 @app.route('/github-callback')
 @github.authorized_handler
 def authorized(access_token):
-    print(access_token)
     session['token'] = access_token
     if access_token:
         user_data = github.get('user')
@@ -101,9 +100,9 @@ def get_node_data():
                     node_counts=counts,
                     hours=hours_,
                     pubkey=pubkey_)
-                create_node.apply_async((counts, name, node_request, pubkey_), seriaizer='pickle')
                 db.session.add(node_request)
                 db.session.commit()
+                create_node.apply_async((counts, name, node_request.id, pubkey_), seriaizer='pickle')
                 flash('Creating your vm..')
             else:
                 flash('Machine label already exists. \
