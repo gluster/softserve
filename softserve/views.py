@@ -82,7 +82,7 @@ def get_node_data():
         ssh = SSHKey(pubkey_, strict=True)
         try:
             ssh.parse()
-        except:
+        except :
             return "Invalid SSH key", 400
 
         '''Validating the machine label'''
@@ -97,14 +97,14 @@ def get_node_data():
             db.session.add(node_request)
             db.session.commit()
             create_node.apply_async((counts, name,node_request.id, pubkey_),
-                                     seriaizer='pickle')
+            seriaizer='pickle')
             return redirect('/dashboard')
         else:
             flash('Machine label already exists. \
                    Please choose different name.')
     else:
         count = db.session.query(func.count(Vm.id)) \
-                .filter_by(state = 'ACTIVE').scalar()
+                .filter_by(state='ACTIVE').scalar()
         if count >= 5:
             flash('Oops!Limit got over. Try again later')
             return redirect('/dashboard')
@@ -116,7 +116,7 @@ def get_node_data():
 
 @app.route('/delete-node/<int:vid>')
 @app.route('/delete-node')
-@organization_access_required('gluster')
+#@organization_access_required('gluster')
 def delete(vid=None):
     if vid is None:
         vms = Vm.query.filter(NodeRequest.user_id == g.user.id,
