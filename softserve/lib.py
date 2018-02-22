@@ -3,11 +3,11 @@ Shared library functions for softserve.
 '''
 
 import time
+import pyrax
 import re
-from sshpubkeys import SSHKey
 from functools import wraps
 from flask import jsonify
-from softserve import db, github, nova, celery
+from softserve import db, github, celery, app
 from softserve.model import Vm, NodeRequest
 
 
@@ -36,19 +36,16 @@ def create_node(counts, name, node_request, pubkey):
     '''
     Create a node in the cloud provider
     '''
+    pyrax.set_setting('identity_type', app.config['AUTH_SYSTEM'])
+    pyrax.set_default_region(app.config['AUTH_SYSTEM_REGION'])
+    pyrax.set_credentials(app.config['USERNAME'], app.config['API_KEY'])
+    nova = pyrax.cloudservers
+
     flavor = nova.flavors.find(name='1 GB General Purpose v1')
     image = nova.images.find(name='CentOS 7 (PVHVM)')
     node_request = NodeRequest.query.get(node_request)
-
-    # create the nodes
-
-    '''Validating the SSH public key'''
-    ssh = SSHKey(pubkey, strict=True)
-    try:
-        ssh.parse()
-    except:
-        raise Exception("Unable to validate SSH")
     keypair = nova.keypairs.create(name, pubkey)
+    # create the nodes
     for count in range(int(counts)):
         vm_name = 'softserve-'+name+'.'+str(count+1)
         node = nova.servers.create(name=vm_name, flavor=flavor.id,
@@ -70,6 +67,11 @@ def create_node(counts, name, node_request, pubkey):
                 db.session.commit()
 
 
+@celery.task()
 def delete_node(vm_name):
-    node = nova.servers.find(name=vm_name)
+    pyrax.set_setting('identity_type', app.config['AUTH_SYSTEM'])
+    pyrax.set_default_region(app.config['AUTH_SYSTEM_REGION'])
+    pyrax.set_credentials(app.config['USERNAME'], app.config['API_KEY'])
+    nova_obj = pyrax.cloudservers
+    node = nova_obj.servers.find(name=vm_name)
     node.delete()

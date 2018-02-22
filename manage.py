@@ -24,9 +24,11 @@ def shutdown_check():
             diff = current_time-start_time
             overall_seconds = diff.total_seconds()
             overall_hours = (overall_seconds) / 3600
-            if overall_hours >= 4.0:
+            node = NodeRequest.query.filter(vm.details_id==NodeRequest.id) \
+                   .join(Vm).first()
+            if overall_hours >= node.hours:
                 name = vm.vm_name
-                delete_node(name)
+                delete_node.delay(name)
                 vm.state = 'DELETED'
                 db.session.commit()
             else:
