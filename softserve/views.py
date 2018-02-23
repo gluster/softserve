@@ -1,6 +1,6 @@
 from flask import render_template, redirect, request, session, g, flash  # noqa: E50
 from sqlalchemy import func
-from sshpubkeys import SSHKey
+import sshpubkeys
 
 from softserve import app, db, github
 from model import User, NodeRequest, Vm
@@ -70,7 +70,7 @@ def dashboard():
 
 
 @app.route('/create_node', methods=['GET', 'POST'])
-@organization_access_required('gluster')
+#@organization_access_required('gluster')
 def get_node_data():
     if request.method == "POST":
         counts = request.form['counts']
@@ -79,10 +79,10 @@ def get_node_data():
         pubkey_ = request.form['pubkey']
 
         '''Validating the SSH public key'''
-        ssh = SSHKey(pubkey_, strict=True)
+        ssh = sshpubkeys.SSHKey(pubkey_, strict=True)
         try:
             ssh.parse()
-        except :
+        except Exception:
             return "Invalid SSH key", 400
 
         '''Validating the machine label'''
@@ -96,8 +96,8 @@ def get_node_data():
                 pubkey=pubkey_)
             db.session.add(node_request)
             db.session.commit()
-            create_node.apply_async((counts, name,node_request.id, pubkey_),
-            seriaizer='pickle')
+            create_node.apply_async((counts, name, node_request.id, pubkey_),
+                                    seriaizer='json')
             return redirect('/dashboard')
         else:
             flash('Machine label already exists. \
@@ -116,7 +116,7 @@ def get_node_data():
 
 @app.route('/delete-node/<int:vid>')
 @app.route('/delete-node')
-#@organization_access_required('gluster')
+@organization_access_required('gluster')
 def delete(vid=None):
     if vid is None:
         vms = Vm.query.filter(NodeRequest.user_id == g.user.id,

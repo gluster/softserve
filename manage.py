@@ -25,7 +25,7 @@ def shutdown_check():
             overall_seconds = diff.total_seconds()
             overall_hours = (overall_seconds) / 3600
             node = NodeRequest.query.filter(vm.details_id == NodeRequest.id) \
-            .join(Vm).first()
+                   .join(Vm).first()
             if overall_hours >= node.hours:
                 name = vm.vm_name
                 delete_node.delay(name)
