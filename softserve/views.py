@@ -70,7 +70,7 @@ def dashboard():
 
 
 @app.route('/create_node', methods=['GET', 'POST'])
-#@organization_access_required('gluster')
+@organization_access_required('gluster')
 def get_node_data():
     if request.method == "POST":
         counts = request.form['counts']
