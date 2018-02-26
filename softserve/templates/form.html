@@ -46,7 +46,7 @@
   <div class='row'>
     <div class="form-group col-md-5">
        <label for="node_name">Machines label</label>
-			 <input type="text" class="form-control" name="node_name" data-toggle="tooltip" title='Should not include any special characters, brackets, .'>
+			 <input type="text" class="form-control" name="node_name" data-toggle="tooltip" title='Should not include any special characters' pattern="[_,a-zA-Z0-9]">
     </div>
   </div>
   <div class='row'>
@@ -63,7 +63,7 @@
   <div class="row">
 	   <div class="form-group col-md-5">
        <label for="counts">Number of machines</label>
-			 <input type="number" min="1" max= "{{n}}" class="form-control" name="counts">
+			 <input type="number" min="1" max="{{n}}" class="form-control" name="counts">
        <p><small id="maximumAllowedMachines" class="text-muted">
           Note: Maximum 5 machines at a time across all users
        </small></p>

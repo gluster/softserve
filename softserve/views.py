@@ -72,7 +72,7 @@ def dashboard():
 
 
 @app.route('/create_node', methods=['GET', 'POST'])
-@organization_access_required('gluster')
+#@organization_access_required('gluster')
 def get_node_data():
     if request.method == "POST":
         counts = request.form['counts']
@@ -80,11 +80,15 @@ def get_node_data():
         hours_ = request.form['hours']
         pubkey_ = request.form['pubkey']
 
+        count = db.session.query(func.count(Vm.id)) \
+                .filter_by(state='ACTIVE').scalar()
+        n = (5-count)
+
         # Validating the hours and node counts
         if counts > 5 or hours_ > 4:
             flash('Please enter the valid data')
             logging.exception('User entered the invalid hours or counts value')
-            return render_template('form.html')
+            return render_template('form.html', n=n)
 
         # Validating the SSH public key
         ssh = SSHKey(pubkey_, strict=True)
@@ -93,7 +97,7 @@ def get_node_data():
         except (exceptions.InvalidKeyError, exceptions.MalformedDataError):
             logging.exception('Invalid key is passed')
             flash('Invalid SSH key')
-            return render_template('form.html')
+            return render_template('form.html', n=n)
 
         # Validating the machine label
         n = NodeRequest.query.filter_by(node_name=name).first()
