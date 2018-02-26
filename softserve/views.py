@@ -3,6 +3,7 @@ from sqlalchemy import func
 from sshpubkeys import SSHKey, exceptions
 import logging
 
+
 from softserve import app, db, github
 from model import User, NodeRequest, Vm
 from lib import create_node, organization_access_required, delete_node
@@ -136,14 +137,10 @@ def delete(vid=None):
         for m in vms:
             name = str(m.vm_name)
             delete_node.delay(name)
-            flash('Deleted {} machine'.format(name))
-            m.state = 'DELETED'
-            db.session.commit()
+            flash('Deleting {} machine'.format(name))
     else:
         machine = Vm.query.filter_by(id=vid).first()
         name = str(machine.vm_name)
         delete_node.delay(name)
-        flash('Deleted {} machine'.format(name))
-        machine.state = 'DELETED'
-        db.session.commit()
+        flash('Deleting {} machine'.format(name))
     return redirect('/dashboard')

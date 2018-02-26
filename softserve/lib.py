@@ -23,10 +23,10 @@ def organization_access_required(org):
             for org_ in orgs:
                 if org_['login'] == org:
                     return func(*args, **kwargs)
-            return jsonify({"response": "You must be the member of gluster \
-                                         organization on Github to serve \
-                                         yourself machines \
-                                         for testing"}), 401
+            return jsonify({"response": "You must be the member of gluster"
+                            " organization on Github to serve"
+                            " yourself machines"
+                            " for testing"}), 401
         return wrap
     return decorator
 
@@ -77,3 +77,7 @@ def delete_node(vm_name):
     node.delete()
     while node.status == 'ACTIVE':
         time.sleep(5)
+
+    vm = Vm.query.filter_by(vm_name=vm_name).first()
+    vm.state = 'DELETED'
+    db.session.commit()

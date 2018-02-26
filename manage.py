@@ -29,8 +29,6 @@ def shutdown_check():
             if overall_hours >= node.hours:
                 name = vm.vm_name
                 delete_node.delay(name)
-                vm.state = 'DELETED'
-                db.session.commit()
             else:
                 pass
 
