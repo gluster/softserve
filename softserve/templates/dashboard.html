@@ -29,17 +29,19 @@
 
 {% block content %}
 <div class="container">
-  {% with messages = get_flashed_messages() %}
-  {% if messages %}
-    <ul class=flashes>
-    {% for message in messages %}
-      <div class="alert alert-warning">
-      <li>{{ message }}</li>
-      </div>
-    {% endfor %}
-    </ul>
-  {% endif %}
-  {% endwith %}
+  <div id="timeoutMessage">
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      <ul class=flashes>
+      {% for message in messages %}
+        <div class="alert alert-warning">
+        <li>{{ message }}</li>
+        </div>
+      {% endfor %}
+      </ul>
+    {% endif %}
+    {% endwith %}
+  </div>
   <h2>Active machines</h2>
     <p>
     <a class="btn btn-info btn-lg" href="/create_node" role="button">
@@ -87,6 +89,10 @@
 </div>
 
 <script>
+  setTimeout(function() {
+        $('#timeoutMessage').fadeOut('fast');
+      }, 3000);
+
   function ConfirmDelete()
     {
       var x = confirm("Are you sure you want to delete?");

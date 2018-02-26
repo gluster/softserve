@@ -1,6 +1,7 @@
 from flask import render_template, redirect, request, session, g, flash  # noqa: E50
 from sqlalchemy import func
-import sshpubkeys
+from sshpubkeys import SSHKey, exceptions
+import logging
 
 from softserve import app, db, github
 from model import User, NodeRequest, Vm
@@ -25,7 +26,7 @@ def about():
     if 'token' in session:
         return redirect('/dashboard')
     else:
-        return render_template('about.html')
+        return render_template('login.html')
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -78,14 +79,22 @@ def get_node_data():
         hours_ = request.form['hours']
         pubkey_ = request.form['pubkey']
 
-        '''Validating the SSH public key'''
-        ssh = sshpubkeys.SSHKey(pubkey_, strict=True)
+        # Validating the hours and node counts
+        if counts > 5 or hours_ > 4:
+            flash('Please enter the valid data')
+            logging.exception('User entered the invalid hours or counts value')
+            return render_template('form.html')
+
+        # Validating the SSH public key
+        ssh = SSHKey(pubkey_, strict=True)
         try:
             ssh.parse()
-        except Exception:
-            return "Invalid SSH key", 400
+        except (exceptions.InvalidKeyError, exceptions.MalformedDataError):
+            logging.exception('Invalid key is passed')
+            flash('Invalid SSH key')
+            return render_template('form.html')
 
-        '''Validating the machine label'''
+        # Validating the machine label
         n = NodeRequest.query.filter_by(node_name=name).first()
         if n is None:
             node_request = NodeRequest(
@@ -96,22 +105,23 @@ def get_node_data():
                 pubkey=pubkey_)
             db.session.add(node_request)
             db.session.commit()
-            create_node.apply_async((counts, name, node_request.id, pubkey_),
-                                    seriaizer='json')
+            create_node.delay(counts, name, node_request.id, pubkey_)
+            flash('Creating your machine. Please wait for a moment.')
             return redirect('/dashboard')
         else:
-            flash('Machine label already exists. \
-                   Please choose different name.')
+            flash('Machine label already exists.'
+                  'Please choose different name.')
     else:
         count = db.session.query(func.count(Vm.id)) \
                 .filter_by(state='ACTIVE').scalar()
         if count >= 5:
-            flash('Oops!Limit got over. Try again later')
+            flash('All our available machines are in use.'
+                  'Please wait until we have a slot available')
             return redirect('/dashboard')
         else:
             n = (5-count)
             flash('You can request upto {} machines'.format(n))
-    return render_template('home.html', n=n)
+    return render_template('form.html', n=n)
 
 
 @app.route('/delete-node/<int:vid>')
@@ -126,12 +136,14 @@ def delete(vid=None):
         for m in vms:
             name = str(m.vm_name)
             delete_node.delay(name)
+            flash('Deleted {} machine'.format(name))
             m.state = 'DELETED'
             db.session.commit()
     else:
         machine = Vm.query.filter_by(id=vid).first()
         name = str(machine.vm_name)
         delete_node.delay(name)
+        flash('Deleted {} machine'.format(name))
         machine.state = 'DELETED'
         db.session.commit()
     return redirect('/dashboard')

@@ -75,3 +75,5 @@ def delete_node(vm_name):
     nova_obj = pyrax.cloudservers
     node = nova_obj.servers.find(name=vm_name)
     node.delete()
+    while node.status == 'ACTIVE':
+        time.sleep(5)
