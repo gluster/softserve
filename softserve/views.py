@@ -72,7 +72,7 @@ def dashboard():
 
 
 @app.route('/create_node', methods=['GET', 'POST'])
-#@organization_access_required('gluster')
+@organization_access_required('gluster')
 def get_node_data():
     if request.method == "POST":
         counts = request.form['counts']
@@ -81,7 +81,7 @@ def get_node_data():
         pubkey_ = request.form['pubkey']
 
         count = db.session.query(func.count(Vm.id)) \
-                .filter_by(state='ACTIVE').scalar()
+            .filter_by(state='ACTIVE').scalar()
         n = (5-count)
 
         # Validating the hours and node counts
