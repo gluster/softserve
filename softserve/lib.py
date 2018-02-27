@@ -75,9 +75,6 @@ def delete_node(vm_name):
     nova_obj = pyrax.cloudservers
     node = nova_obj.servers.find(name=vm_name)
     node.delete()
-    while node.status == 'ACTIVE':
-        time.sleep(5)
-
     vm = Vm.query.filter_by(vm_name=vm_name).first()
     vm.state = 'DELETED'
     db.session.commit()
