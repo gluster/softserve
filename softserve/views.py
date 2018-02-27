@@ -2,7 +2,7 @@ from flask import render_template, redirect, request, session, g, flash  # noqa:
 from sqlalchemy import func
 from sshpubkeys import SSHKey, exceptions
 import logging
-
+import re
 
 from softserve import app, db, github
 from model import User, NodeRequest, Vm
@@ -85,7 +85,7 @@ def get_node_data():
         pubkey_ = request.form['pubkey']
 
         # Validating the hours and node counts
-        if counts > 5 or hours_ > 4:
+        if int(counts) > 5 or int(hours_) > 4:
             flash('Please enter the valid data')
             logging.exception('User entered the invalid hours or counts value')
             return render_template('form.html', n=n)
@@ -102,17 +102,20 @@ def get_node_data():
         # Validating the machine label
         label = NodeRequest.query.filter_by(node_name=name).first()
         if label is None:
-            node_request = NodeRequest(
-                user_id=g.user.id,
-                node_name=name,
-                node_counts=counts,
-                hours=hours_,
-                pubkey=pubkey_)
-            db.session.add(node_request)
-            db.session.commit()
-            create_node.delay(counts, name, node_request.id, pubkey_)
-            flash('Creating your machine. Please wait for a moment.')
-            return redirect('/dashboard')
+            if re.match("^[a-zA-Z0-9_]+$", str(name)):
+                node_request = NodeRequest(
+                    user_id=g.user.id,
+                    node_name=name,
+                    node_counts=counts,
+                    hours=hours_,
+                    pubkey=pubkey_)
+                db.session.add(node_request)
+                db.session.commit()
+                create_node.delay(counts, name, node_request.id, pubkey_)
+                flash('Creating your machine. Please wait for a moment.')
+                return redirect('/dashboard')
+            else:
+                flash('Invalid label entry.')
         else:
             flash('Machine label already exists.'
                   'Please choose different name.')
