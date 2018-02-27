@@ -74,15 +74,15 @@ def dashboard():
 @app.route('/create_node', methods=['GET', 'POST'])
 @organization_access_required('gluster')
 def get_node_data():
+    count = db.session.query(func.count(Vm.id)) \
+        .filter_by(state='ACTIVE').scalar()
+    n = (5-count)
+
     if request.method == "POST":
         counts = request.form['counts']
         name = request.form['node_name']
         hours_ = request.form['hours']
         pubkey_ = request.form['pubkey']
-
-        count = db.session.query(func.count(Vm.id)) \
-            .filter_by(state='ACTIVE').scalar()
-        n = (5-count)
 
         # Validating the hours and node counts
         if counts > 5 or hours_ > 4:
@@ -100,8 +100,8 @@ def get_node_data():
             return render_template('form.html', n=n)
 
         # Validating the machine label
-        n = NodeRequest.query.filter_by(node_name=name).first()
-        if n is None:
+        label = NodeRequest.query.filter_by(node_name=name).first()
+        if label is None:
             node_request = NodeRequest(
                 user_id=g.user.id,
                 node_name=name,
@@ -117,14 +117,11 @@ def get_node_data():
             flash('Machine label already exists.'
                   'Please choose different name.')
     else:
-        count = db.session.query(func.count(Vm.id)) \
-                .filter_by(state='ACTIVE').scalar()
         if count >= 5:
             flash('All our available machines are in use.'
                   'Please wait until we have a slot available')
             return redirect('/dashboard')
         else:
-            n = (5-count)
             flash('You can request upto {} machines'.format(n))
     return render_template('form.html', n=n)
 
