@@ -1,5 +1,8 @@
 from flask import render_template, redirect, request, session, g, flash  # noqa: E50
 from sqlalchemy import func
+from sshpubkeys import SSHKey, exceptions
+import logging
+
 
 from softserve import app, db, github
 from model import User, NodeRequest, Vm
@@ -21,7 +24,10 @@ def token_getter():
 
 @app.route('/', methods=['GET', 'POST'])
 def about():
-    return render_template('about.html')
+    if 'token' in session:
+        return redirect('/dashboard')
+    else:
+        return render_template('login.html')
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -32,7 +38,6 @@ def login():
 @app.route('/github-callback')
 @github.authorized_handler
 def authorized(access_token):
-    print(access_token)
     session['token'] = access_token
     if access_token:
         user_data = github.get('user')
@@ -58,19 +63,6 @@ def logout():
     return redirect('/')
 
 
-@app.route('/form', methods=['GET', 'POST'])
-def home():
-    count = db.session.query(func.count(Vm.id)) \
-            .filter_by(state = 'ACTIVE').scalar()
-    if count >= 5:
-        flash('Oops!Limit got over. Try again later')
-        return redirect('/dashboard')
-    else:
-        n = (5-count)
-        flash('You can request upto {} machines'.format(n))
-        return render_template('home.html', n=n)
-
-
 @app.route('/dashboard', methods=['GET', 'POST'])
 def dashboard():
     vms = Vm.query.filter(NodeRequest.user_id == g.user.id,
@@ -80,35 +72,58 @@ def dashboard():
 
 
 @app.route('/create_node', methods=['GET', 'POST'])
-#@organization_access_required('gluster')
+@organization_access_required('gluster')
 def get_node_data():
     count = db.session.query(func.count(Vm.id)) \
-            .filter_by(state = 'ACTIVE').scalar()
-    if count >=5:
-        flash('Limit got over!')
-        return render_template('home.html')
+        .filter_by(state='ACTIVE').scalar()
+    n = (5-count)
+
+    if request.method == "POST":
+        counts = request.form['counts']
+        name = request.form['node_name']
+        hours_ = request.form['hours']
+        pubkey_ = request.form['pubkey']
+
+        # Validating the hours and node counts
+        if counts > 5 or hours_ > 4:
+            flash('Please enter the valid data')
+            logging.exception('User entered the invalid hours or counts value')
+            return render_template('form.html', n=n)
+
+        # Validating the SSH public key
+        ssh = SSHKey(pubkey_, strict=True)
+        try:
+            ssh.parse()
+        except (exceptions.InvalidKeyError, exceptions.MalformedDataError):
+            logging.exception('Invalid key is passed')
+            flash('Invalid SSH key')
+            return render_template('form.html', n=n)
+
+        # Validating the machine label
+        label = NodeRequest.query.filter_by(node_name=name).first()
+        if label is None:
+            node_request = NodeRequest(
+                user_id=g.user.id,
+                node_name=name,
+                node_counts=counts,
+                hours=hours_,
+                pubkey=pubkey_)
+            db.session.add(node_request)
+            db.session.commit()
+            create_node.delay(counts, name, node_request.id, pubkey_)
+            flash('Creating your machine. Please wait for a moment.')
+            return redirect('/dashboard')
+        else:
+            flash('Machine label already exists.'
+                  'Please choose different name.')
     else:
-        if request.method == "POST":
-            counts = request.form['counts']
-            name = request.form['node_name']
-            hours_ = request.form['hours']
-            pubkey_ = request.form['pubkey']
-            n = NodeRequest.query.filter_by(node_name=name).first()
-            if n is None:
-                node_request = NodeRequest(
-                    user_id=g.user.id,
-                    node_name=name,
-                    node_counts=counts,
-                    hours=hours_,
-                    pubkey=pubkey_)
-                db.session.add(node_request)
-                db.session.commit()
-                create_node(counts, name, node_request, pubkey_)
-                flash('Your VM has been created. Go back to Dashboard')
-            else:
-                flash('Machine label already exists. \
-                       Please choose different name.')
-        return render_template('home.html')
+        if count >= 5:
+            flash('All our available machines are in use.'
+                  'Please wait until we have a slot available')
+            return redirect('/dashboard')
+        else:
+            flash('You can request upto {} machines'.format(n))
+    return render_template('form.html', n=n)
 
 
 @app.route('/delete-node/<int:vid>')
@@ -122,13 +137,11 @@ def delete(vid=None):
 
         for m in vms:
             name = str(m.vm_name)
-            delete_node(name)
-            m.state = 'DELETED'
-            db.session.commit()
+            delete_node.delay(name)
+            flash('Deleting {} machine'.format(name))
     else:
         machine = Vm.query.filter_by(id=vid).first()
         name = str(machine.vm_name)
-        delete_node(name)
-        machine.state = 'DELETED'
-        db.session.commit()
+        delete_node.delay(name)
+        flash('Deleting {} machine'.format(name))
     return redirect('/dashboard')
