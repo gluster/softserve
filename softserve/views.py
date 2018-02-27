@@ -2,7 +2,10 @@ from flask import render_template, redirect, request, session, g, flash  # noqa:
 from sqlalchemy import func
 from sshpubkeys import SSHKey, exceptions
 import logging
+<<<<<<< HEAD
 import re
+=======
+>>>>>>> 516545d95244cef2b9b55c949d72d33c79e24fa5
 
 
 from softserve import app, db, github
