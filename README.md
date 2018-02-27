@@ -1,5 +1,7 @@
 # Softserve
-Web application for self serving fixed duration VMs to carry out debugging in Gluster project. The served VMs will get automatically removed after a fixed number of hours (4 hrs, can be changed lately).
+Softserv is a web based service which enables users to self-provision virtual machines for a fixed duration. These virtual instances can be used to debug issues arising in various topics within the Gluster project. The provisioned VMs will get automatically removed after a fixed number of hours (at present this is set to 4 hrs)
+
+The Gluster Infrastructure Project offers an instance of this service. To deploy this service outside of the Infrastructure, please follow the instruction set below.
 
 ## Installation
 * Before you start installation make sure you have a working installation of python2
