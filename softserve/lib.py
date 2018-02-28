@@ -79,7 +79,6 @@ def delete_node(vm_name):
     try:
         node = nova_obj.servers.find(name=vm_name)
         node.delete()
-        raise NotFound
     except NotFound:
         logging.exception('Server not found')
     vm.state = 'DELETED'
