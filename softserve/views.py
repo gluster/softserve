@@ -85,7 +85,7 @@ def get_node_data():
         pubkey_ = request.form['pubkey']
 
         # Validating the hours and node counts
-        if int(counts) > 5 or int(hours_) > 4:
+        if int(counts) > 5 or int(hours_) > 4 or int(counts) > n:
             flash('Please enter the valid data')
             logging.exception('User entered the invalid hours or counts value')
             return render_template('form.html', n=n)
