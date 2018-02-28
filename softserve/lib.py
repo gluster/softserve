@@ -73,8 +73,9 @@ def delete_node(vm_name):
     pyrax.set_default_region(app.config['AUTH_SYSTEM_REGION'])
     pyrax.set_credentials(app.config['USERNAME'], app.config['API_KEY'])
     nova_obj = pyrax.cloudservers
+    vm = Vm.query.filter_by(vm_name=vm_name).first()
     node = nova_obj.servers.find(name=vm_name)
     node.delete()
-    vm = Vm.query.filter_by(vm_name=vm_name).first()
     vm.state = 'DELETED'
+    db.session.add(vm)
     db.session.commit()
