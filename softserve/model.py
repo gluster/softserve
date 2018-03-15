@@ -50,6 +50,7 @@ class Vm(db.Model):
     vm_name = db.Column(db.String(100), unique=False, nullable=False)
     details_id = db.Column(db.Integer, db.ForeignKey('node_request.id'))
     created_at = db.Column(db.DateTime, default=datetime.now)
+    deleted_at = db.Column(db.DateTime)
     state = db.Column(db.String(10))
 
     def __init__(self, ip_address, vm_name, state):
