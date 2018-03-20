@@ -6,6 +6,7 @@ import time
 import pyrax
 import re
 import logging
+from datetime import datetime
 from novaclient.exceptions import NotFound
 from functools import wraps
 from flask import jsonify
@@ -82,5 +83,6 @@ def delete_node(vm_name):
     except NotFound:
         logging.exception('Server not found')
     vm.state = 'DELETED'
+    vm.deleted_at = datetime.now
     db.session.add(vm)
     db.session.commit()

@@ -19,5 +19,3 @@ celery.conf.update(app.config)
 
 from views import about  # noqa: E402, F401
 from model import User, NodeRequest, Vm  # noqa: E402, F401
-
-db.create_all()
