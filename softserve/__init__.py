@@ -19,3 +19,8 @@ celery.conf.update(app.config)
 
 from views import about  # noqa: E402, F401
 from model import User, NodeRequest, Vm  # noqa: E402, F401
+<<<<<<< d9efd336f3872be8f153d58d949a089f61376283
+=======
+
+# db.create_all()
+>>>>>>> Create a new migration for a change in Vm table
