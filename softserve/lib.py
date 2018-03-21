@@ -83,6 +83,6 @@ def delete_node(vm_name):
     except NotFound:
         logging.exception('Server not found')
     vm.state = 'DELETED'
-    vm.deleted_at = datetime.now
+    vm.deleted_at = datetime.now()
     db.session.add(vm)
     db.session.commit()
