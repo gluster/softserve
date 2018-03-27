@@ -9,7 +9,7 @@ import logging
 from datetime import datetime
 from novaclient.exceptions import NotFound
 from functools import wraps
-from flask import jsonify
+from flask import jsonify, g, redirect, url_for, request
 from softserve import db, github, celery, app
 from softserve.model import Vm, NodeRequest
 
@@ -22,6 +22,8 @@ def organization_access_required(org):
     def decorator(func):
         @wraps(func)
         def wrap(*args, **kwargs):
+            if g.user is None:
+                return redirect(url_for('login', next=request.url))
             orgs = github.get('user/orgs')
             for org_ in orgs:
                 if org_['login'] == org:

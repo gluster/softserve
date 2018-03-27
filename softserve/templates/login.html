@@ -2,27 +2,25 @@
 
 {% block content %}
 <div class="intro-header">
-    <div class="container">
-        <div class="row">
-            <div class="col-lg-12">
-                <div class="intro-message">
-                    <h1>SOFTSERVE</h1>
-                    <h3>Serve yourself with the VM!</h3>
-                    <hr class="intro-divider">
-                    </ul>
-                    <center>
-                      {% if 'token' not in session %}
-                        <form action='/login' method='POST'>
-                          <button type="submit" class="btn btn-info btn-login btn-md">
-                            <i class="fa fa-github" aria-hidden="true"></i>
-                            Login with Github
-                          </button>
-                        </form>
-                      {% endif %}
-                    </center>
-                  </div>
-            </div>
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="intro-message">
+                <h1>SOFTSERVE</h1>
+                <h3>Serve yourself with the VM!</h3>
+                <hr class="intro-divider">
+                </ul>
+                <center>
+                  {% if 'token' not in session %}
+                    <form action='/login' method='POST'>
+                      <button type="submit" class="btn btn-info btn-login btn-md">
+                        <i class="fa fa-github" aria-hidden="true"></i>
+                        Login with Github
+                      </button>
+                    </form>
+                  {% endif %}
+                </center>
+              </div>
         </div>
     </div>
 </div>
-{% endblock %}
+{% endblock content %}
