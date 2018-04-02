@@ -16,7 +16,7 @@
   </div>
   <h2>Active machines</h2>
     <p>
-    <a class="btn btn-info btn-lg" href="/create_node" role="button">
+    <a class="btn btn-info btn-lg" href="{{ url_for('get_node_data') }}" role="button">
       <span class="glyphicon glyphicon-triangle-left"></span>
       CREATE NODES</a>
     <a class="btn btn-info btn-lg" href="/delete-node" role="button" Onclick="return ConfirmDelete();" >
