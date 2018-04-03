@@ -7,7 +7,8 @@
 {% block head %}
 {{super()}}
 {{fixes.ie8()}}
-{%- endblock %}
+<link rel="icon" type="image/png" href="/static/img/favicon.png">
+{% endblock %}
 
 {% block styles %}
 {{super()}}
@@ -22,5 +23,13 @@
 <script type="text/javascript"> $(document).ready(function () { $('.dropdown-toggle').dropdown(); }); </script>
 {% endblock %}
 
-{% block navbar %}
+
+{% block body %}
+{% include 'snippets/nav.html' %}
+<div class="container">
+{{ super() }}
+{% block footer %}
+    <footer><p>Favicon: Ice Cream Cone by Creative Mahira from <a href="https://thenounproject.com/search/?q=ice%20cream&i=1378384#">The Noun Project</a><p></footer>
+{% endblock footer %}
+</div>
 {% endblock %}

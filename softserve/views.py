@@ -64,6 +64,7 @@ def logout():
 
 
 @app.route('/dashboard', methods=['GET', 'POST'])
+@organization_access_required('gluster')
 def dashboard():
     vms = Vm.query.filter(NodeRequest.user_id == g.user.id,
                           Vm.state == 'ACTIVE') \
@@ -71,7 +72,7 @@ def dashboard():
     return render_template('dashboard.html', vms=vms)
 
 
-@app.route('/create_node', methods=['GET', 'POST'])
+@app.route('/create', methods=['GET', 'POST'])
 @organization_access_required('gluster')
 def get_node_data():
     count = db.session.query(func.count(Vm.id)) \
