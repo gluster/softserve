@@ -34,7 +34,7 @@ def shutdown_check():
 
 
 @app.cli.command()
-@click.option('--username', default=None, help='add github username in admin list')
+@click.option('--username', default=None, help='github username to add')
 def make_admin(username):
     '''Command to make a user as an admin of softserve'''
     app.config['ADMINS'].append(username)

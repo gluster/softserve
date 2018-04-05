@@ -154,5 +154,7 @@ def delete(vid=None):
 
 @app.route('/report')
 def report():
-    vmList = Vm.query.join(NodeRequest).join(User).add_columns(Vm.vm_name, Vm.created_at, Vm.deleted_at, User.name).all()
+    vmList = Vm.query.join(NodeRequest).join(User) \
+             .add_columns(Vm.vm_name, Vm.created_at,
+                          Vm.deleted_at, User.name).all()
     return render_template('report.html', vmList=vmList)
