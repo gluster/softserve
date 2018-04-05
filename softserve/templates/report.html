@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+  <div class="row">
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+              <p><h3 class="panel-title">USAGE REPORT</h3></p>
+            </div>
+            <br>
+            <input class="form-control" name="q" id="q" type="text" placeholder="Search.." onkeyup="doSearch();" />
+            <br>
+            <table class="table table-bordered table-striped">
+              <thead>
+                <tr>
+                  <th>User</th>
+                  <th>Machine name</th>
+                  <th>Creation time</th>
+                  <th>Deletion time</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for vms in vmList %}
+                  <tr>
+                    <td>{{ vms.name }}</td>
+                    <td>{{ vms.vm_name }}</td>
+                    <td>{{ vms.created_at }}</td>
+                    <td>{{ vms.deleted_at }}</td>
+                  </tr>
+                {% endfor %}
+                <tr style="display:none;" id="noresults">
+                  <td>(no listings that start with "<span id="qt"></span>")</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+
+{% endblock content %}

@@ -69,7 +69,8 @@ def dashboard():
     vms = Vm.query.filter(NodeRequest.user_id == g.user.id,
                           Vm.state == 'ACTIVE') \
           .join(NodeRequest).join(User).all()
-    return render_template('dashboard.html', vms=vms)
+    admins = app.config['ADMINS']
+    return render_template('dashboard.html', vms=vms, admins=admins)
 
 
 @app.route('/create', methods=['GET', 'POST'])
@@ -149,3 +150,9 @@ def delete(vid=None):
         delete_node.delay(name)
         flash('Deleting {} machine'.format(name))
     return redirect('/dashboard')
+
+
+@app.route('/report')
+def report():
+    vmList = Vm.query.join(NodeRequest).join(User).add_columns(Vm.vm_name, Vm.created_at, Vm.deleted_at, User.name).all()
+    return render_template('report.html', vmList=vmList)

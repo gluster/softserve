@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import datetime
+import click
 
 from softserve import app, db
 from softserve.model import User, NodeRequest, Vm
@@ -30,6 +31,17 @@ def shutdown_check():
                 delete_node.delay(vm.vm_name)
             else:
                 pass
+
+
+@app.cli.command()
+@click.option('--username', default=None, help='add github username in admin list')
+def make_admin(username):
+    '''Command to make a user as an admin of softserve'''
+    app.config['ADMINS'].append(username)
+    user = User.query.filter(username == username).first()
+    user.admin = True
+    db.session.add(user)
+    db.sesion.commit()
 
 
 if __name__ == '__main__':

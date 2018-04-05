@@ -1,5 +1,9 @@
 {% extends 'base.html' %}
+
 {% set active = 'dashboard' %}
+
+{% import "bootstrap/utils.html" as utils %}
+
 {% block content %}
   <div id="timeoutMessage">
     {% with messages = get_flashed_messages() %}

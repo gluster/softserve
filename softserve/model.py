@@ -15,6 +15,7 @@ class User(db.Model):
     token = db.Column(db.String(1000))
     email = db.Column(db.String(100), unique=True)
     name = db.Column(db.String(100))
+    admin = db.Column(db.Boolean, default=False, nullable=False)
     node_request = db.relationship(
         'NodeRequest',
         backref='user',
@@ -26,6 +27,9 @@ class User(db.Model):
 
 
 class NodeRequest(db.Model):
+    '''
+    Requesting node model
+    '''
     __tablename__ = 'node_request'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
@@ -44,6 +48,9 @@ class NodeRequest(db.Model):
 
 
 class Vm(db.Model):
+    '''
+    Vm model
+    '''
     __tablename__ = 'vm'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     ip_address = db.Column(db.VARCHAR(45))
