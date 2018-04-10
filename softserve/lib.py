@@ -37,7 +37,7 @@ def organization_access_required(org):
 
 
 @celery.task()
-def create_node(counts, name, node_request, pubkey):
+def create_node(counts, name, node_request, pubkey, image):
     '''
     Create a node in the cloud provider
     '''
@@ -47,7 +47,7 @@ def create_node(counts, name, node_request, pubkey):
     nova = pyrax.cloudservers
 
     flavor = nova.flavors.find(name='1 GB General Purpose v1')
-    image = nova.images.find(name='CentOS 7 (PVHVM)')
+    image = nova.images.find(name=image)
     node_request = NodeRequest.query.get(node_request)
     keypair = nova.keypairs.create(name, pubkey)
     # create the nodes

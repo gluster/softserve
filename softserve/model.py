@@ -30,6 +30,7 @@ class NodeRequest(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     node_name = db.Column(db.String(100), nullable=False)
+    image_type = db.Column(db.String(20), nullable=False)
     node_counts = db.Column(db.Integer, nullable=False)
     hours = db.Column(db.Integer, nullable=False)
     pubkey = db.Column(db.VARCHAR(1024), nullable=False)

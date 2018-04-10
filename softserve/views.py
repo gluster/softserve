@@ -84,6 +84,7 @@ def get_node_data():
         name = request.form['node_name']
         hours_ = request.form['hours']
         pubkey_ = request.form['pubkey']
+        image = request.form['image']
 
         # Validating the hours and node counts
         if int(counts) > 5 or int(hours_) > 4 or int(counts) > n:
@@ -107,12 +108,13 @@ def get_node_data():
                 node_request = NodeRequest(
                     user_id=g.user.id,
                     node_name=name,
+                    image_type=image,
                     node_counts=counts,
                     hours=hours_,
                     pubkey=pubkey_)
                 db.session.add(node_request)
                 db.session.commit()
-                create_node.delay(counts, name, node_request.id, pubkey_)
+                create_node.delay(counts, name, node_request.id, pubkey_, image)
                 flash('Creating your machine. Please wait for a moment.')
                 return redirect('/dashboard')
             else:
