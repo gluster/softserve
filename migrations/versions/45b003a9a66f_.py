@@ -1,9 +1,7 @@
 """empty message
-
 Revision ID: 45b003a9a66f
 Revises:
 Create Date: 2018-02-12 15:32:20.685721
-
 """
 from alembic import op
 import sqlalchemy as sa
@@ -59,4 +57,4 @@ def downgrade():
     op.drop_table('vm')
     op.drop_table('node_request')
     op.drop_table('user')
-    # ### end Alembic commands ###
+# ### end Alembic commands ###

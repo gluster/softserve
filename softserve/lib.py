@@ -7,7 +7,7 @@ import pyrax
 import re
 import logging
 from datetime import datetime
-from novaclient.exceptions import NotFound
+from novaclient.exceptions import NotFound, Conflict
 from functools import wraps
 from flask import jsonify, g, redirect, url_for, request
 from softserve import db, github, celery, app
@@ -49,12 +49,15 @@ def create_node(counts, name, node_request, pubkey):
     flavor = nova.flavors.find(name='1 GB General Purpose v1')
     image = nova.images.find(name='CentOS 7 (PVHVM)')
     node_request = NodeRequest.query.get(node_request)
-    keypair = nova.keypairs.create(name, pubkey)
+    try:
+        nova.keypairs.create(name, pubkey)
+    except Conflict:
+        logging.exception('Keypair already exist')
     # create the nodes
     for count in range(int(counts)):
         vm_name = 'softserve-'+name+'.'+str(count+1)
         node = nova.servers.create(name=vm_name, flavor=flavor.id,
-                                   image=image.id, key_name=keypair.name)
+                                   image=image.id, key_name=name)
 
         # wait for server to get active
         while node.status == 'BUILD':

@@ -69,7 +69,8 @@ def dashboard():
     vms = Vm.query.filter(NodeRequest.user_id == g.user.id,
                           Vm.state == 'ACTIVE') \
           .join(NodeRequest).join(User).all()
-    return render_template('dashboard.html', vms=vms)
+    admins = app.config['ADMINS']
+    return render_template('dashboard.html', vms=vms, admins=admins)
 
 
 @app.route('/create', methods=['GET', 'POST'])
@@ -101,7 +102,9 @@ def get_node_data():
             return render_template('form.html', n=n)
 
         # Validating the machine label
-        label = NodeRequest.query.filter_by(node_name=name).first()
+        label = Vm.query.filter(Vm.state == 'ACTIVE',
+                                NodeRequest.node_name == name). \
+            join(NodeRequest).first()
         if label is None:
             if re.match("^[a-zA-Z0-9_]+$", str(name)):
                 node_request = NodeRequest(
@@ -109,7 +112,7 @@ def get_node_data():
                     node_name=name,
                     node_counts=counts,
                     hours=hours_,
-                    pubkey=pubkey_)
+                    pubkey=pubkey_,)
                 db.session.add(node_request)
                 db.session.commit()
                 create_node.delay(counts, name, node_request.id, pubkey_)
@@ -149,3 +152,15 @@ def delete(vid=None):
         delete_node.delay(name)
         flash('Deleting {} machine'.format(name))
     return redirect('/dashboard')
+
+
+@app.route('/report')
+def report():
+    request = NodeRequest.query.filter(NodeRequest.user_id == User.id).\
+                                join(User).all()
+    data = {}
+    for r in request:
+        vm = Vm.query.filter(Vm.details_id == r.id).join(NodeRequest).all()
+        data[str(r.user.name)] = vm
+    print data
+    return render_template('report.html', detail=data)
