@@ -41,7 +41,7 @@ def make_admin(username):
     user = User.query.filter(username == username).first()
     user.admin = True
     db.session.add(user)
-    db.sesion.commit()
+    db.session.commit()
 
 
 if __name__ == '__main__':
