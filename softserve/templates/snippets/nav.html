@@ -1,14 +1,14 @@
 {% block navbar %}
-<nav class="navbar navbar-inverse">
-  <div class="container-fluid">
-    <div class="navbar-header">
-      <a class="navbar-brand" href="#">Softserve</a>
-    </div>
-    <ul class="nav navbar-nav">
-      <li {%- if active == 'dashboard' %} class='active' {% endif -%}><a href="/dashboard">Dashboard</a></li>
-    </ul>
-    <ul class="nav navbar-nav navbar-right">
-      {% if 'token' in session %}
+{% if 'token' in session %}
+  <nav class="navbar navbar-inverse">
+    <div class="container-fluid">
+      <div class="navbar-header">
+        <a class="navbar-brand" href="#">Softserve</a>
+      </div>
+      <ul class="nav navbar-nav">
+        <li {%- if active == 'dashboard' %} class='active' {% endif -%}><a href="/dashboard">Dashboard</a></li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
         <li class="dropdown">
           <a class=" dropdown-toggle" data-toggle="dropdown" aria-expanded="true">
             {{ g.user.name }}<span class="caret"></span>
@@ -20,8 +20,8 @@
             <li><a href="/logout"><span class="glyphicon glyphicon-log-out"></span> Logout</a></li>
           </ul>
         </li>
-      {% endif %}
-    </ul>
-  </div>
-</nav>
+      </ul>
+    </div>
+  </nav>
+{% endif %}
 {% endblock %}

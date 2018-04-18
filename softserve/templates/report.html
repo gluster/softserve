@@ -20,13 +20,15 @@
                 </tr>
               </thead>
               <tbody>
-                {% for vms in vmList %}
-                  <tr>
-                    <td>{{ vms.name }}</td>
-                    <td>{{ vms.vm_name }}</td>
-                    <td>{{ vms.created_at }}</td>
-                    <td>{{ vms.deleted_at }}</td>
-                  </tr>
+                {% for name in detail %}
+                  {% for data in detail[name] %}
+                    <tr>
+                      <td>{{ name }}</td>
+                      <td>{{ data.vm_name }}</td>
+                      <td>{{ data.created_at }}</td>
+                      <td>{{ data.deleted_at }}</td>
+                    </tr>
+                  {% endfor %}
                 {% endfor %}
                 <tr style="display:none;" id="noresults">
                   <td>(no listings that start with "<span id="qt"></span>")</td>

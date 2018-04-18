@@ -102,7 +102,9 @@ def get_node_data():
             return render_template('form.html', n=n)
 
         # Validating the machine label
-        label = Vm.query.filter(Vm.state == 'ACTIVE', NodeRequest.node_name == name).join(NodeRequest).first()
+        label = Vm.query.filter(Vm.state == 'ACTIVE',
+                                NodeRequest.node_name == name). \
+            join(NodeRequest).first()
         if label is None:
             if re.match("^[a-zA-Z0-9_]+$", str(name)):
                 node_request = NodeRequest(
@@ -154,16 +156,11 @@ def delete(vid=None):
 
 @app.route('/report')
 def report():
-    #vmList = Vm.query.filter(Vm.user_id == User.id).join(User).all()
-    vmList = Vm.query.filter(User.name, Vm.vm_name, Vm.created_at, Vm.deleted_at).join(NodeRequest, Vm.details_id == NodeRequest.id).join(User, User.id == NodeRequest.user_id).all()
-    #vmList = Vm.query.join(NodeRequest).join(User) \
-    #         .add_columns(Vm.vm_name, Vm.created_at,
-    #                      Vm.deleted_at, User.name).all()
-    #request = NodeRequest.query.filter(NodeRequest.id).join(User, NodeRequest.user_id == User.id).all()
-    request = NodeRequest.query.filter(NodeRequest.user_id == User.id).join(User).all()
+    request = NodeRequest.query.filter(NodeRequest.user_id == User.id).\
+                                join(User).all()
     data = {}
     for r in request:
         vm = Vm.query.filter(Vm.details_id == r.id).join(NodeRequest).all()
         data[str(r.user.name)] = vm
-    print vmList
-    return render_template('report.html', vmList=vmList)
+    print data
+    return render_template('report.html', detail=data)

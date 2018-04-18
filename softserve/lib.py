@@ -50,7 +50,7 @@ def create_node(counts, name, node_request, pubkey):
     image = nova.images.find(name='CentOS 7 (PVHVM)')
     node_request = NodeRequest.query.get(node_request)
     try:
-        keypair = nova.keypairs.create(name, pubkey)
+        nova.keypairs.create(name, pubkey)
     except Conflict:
         logging.exception('Keypair already exist')
     # create the nodes

@@ -19,11 +19,13 @@
   <h2>Active machines</h2>
     <p>
     <a class="btn btn-info btn-lg" href="{{ url_for('get_node_data') }}" role="button">
-      <span class="glyphicon glyphicon-triangle-left"></span>
+      <span class="glyphicon glyphicon-plus"></span>
       CREATE NODES</a>
-    <a class="btn btn-info btn-lg" href="/delete-node" role="button" Onclick="return ConfirmDelete();" >
-      <span class="glyphicon glyphicon-trash"></span>
-      DELETE NODES</a>
+    {% if not vms == [] %}
+      <a class="btn btn-info btn-lg" href="/delete-node" role="button" Onclick="return ConfirmDelete();" >
+        <span class="glyphicon glyphicon-trash"></span>
+        DELETE NODES</a>
+    {% endif %}
     </p>
   <div class='panel panel-default'>
     <div class="panel-heading"><h3>List of Virtual machines</h3></div>

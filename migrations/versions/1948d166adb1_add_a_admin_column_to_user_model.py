@@ -7,6 +7,7 @@ Create Date: 2018-04-05 15:50:43.628791
 """
 from alembic import op
 import sqlalchemy as sa
+from sqlalchemy.sql import expression
 
 
 revision = '1948d166adb1'
@@ -17,7 +18,8 @@ depends_on = None
 
 def upgrade():
     op.add_column('user', sa.Column('admin', sa.Boolean(),
-                                    server_default=expression.false(), nullable=False))
+                                    server_default=expression.false(),
+                                    nullable=False))
 
 
 def downgrade():
