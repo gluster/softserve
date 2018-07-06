@@ -46,8 +46,8 @@ def create_node(counts, name, node_request, pubkey):
     pyrax.set_credentials(app.config['USERNAME'], app.config['API_KEY'])
     nova = pyrax.cloudservers
 
-    flavor = nova.flavors.find(name='1 GB General Purpose v1')
-    image = nova.images.find(name='CentOS 7 (PVHVM)')
+    flavor = nova.flavors.find(name='2 GB General Purpose v1')
+    image = nova.images.find(name='centos7-test')
     node_request = NodeRequest.query.get(node_request)
     try:
         nova.keypairs.create(name, pubkey)
