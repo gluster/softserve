@@ -25,3 +25,10 @@ The Gluster Infrastructure Project offers an instance of this service. To deploy
 
 ## TODO
 * Write down the test cases
+
+## Instance configuration details
+* Operating system: CentOS 7(template with dependencies installed for glusterfs)
+* RAM: 2GB
+* CPU: 2 vCPUs
+* System Disk: 40GB
+* Network: 400Mb/s
