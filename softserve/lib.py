@@ -74,7 +74,7 @@ def create_node(counts, name, node_request, pubkey):
                 db.session.add(machine)
                 db.session.commit()
 
-    #get rid of key pair from the list on Rackspace
+    # get rid of key pair from the list on Rackspace
     nova.keypairs.delete(name)
 
 
