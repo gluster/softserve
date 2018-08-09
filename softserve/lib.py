@@ -74,6 +74,9 @@ def create_node(counts, name, node_request, pubkey):
                 db.session.add(machine)
                 db.session.commit()
 
+    # get rid of key pair from the list on Rackspace
+    nova.keypairs.delete(name)
+
 
 @celery.task()
 def delete_node(vm_name):
@@ -81,7 +84,7 @@ def delete_node(vm_name):
     pyrax.set_default_region(app.config['AUTH_SYSTEM_REGION'])
     pyrax.set_credentials(app.config['USERNAME'], app.config['API_KEY'])
     nova_obj = pyrax.cloudservers
-    vm = Vm.query.filter_by(vm_name=vm_name).first()
+    vm = Vm.query.filter_by(vm_name=vm_name, state='ACTIVE').first()
     try:
         node = nova_obj.servers.find(name=vm_name)
         node.delete()
