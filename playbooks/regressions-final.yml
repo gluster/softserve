@@ -1,0 +1,125 @@
+---
+- hosts: softserve
+  gather_facts: yes
+  tasks:
+  - name: Disable ipv6 in eth0 config
+    lineinfile:
+      dest: /etc/sysconfig/network-scripts/ifcfg-eth0
+      regexp: ^IPV6INIT=
+      line: IPV6INIT=no
+
+  - name: Disable ipv6 in network config
+    lineinfile:
+      dest: /etc/sysconfig/network
+      regexp: ^NETWORKING_IPV6=
+      line: NETWORKING_IPV6=no
+
+  - name: Disable ipv6 in sysctl
+    sysctl:
+      name: "{{ item }}"
+      value: 1
+      state: present
+      reload: yes
+    with_items:
+    - net.ipv6.conf.all.disable_ipv6
+    - net.ipv6.conf.default.disable_ipv6
+
+  - name: Load kernel parameters
+    command: sysctl -p
+
+  # use "install ipv6 /bin/true", since that's what ip6tables check to see if
+  # ipv6 is disabled. See reload function on /etc/init.d/ip6tables on RHEL 6.
+  - name: Disable ipv6 module
+    copy:
+      dest: /etc/modprobe.d/ipv6.conf
+      content: "options ipv6 disable=1\ninstall ipv6 /bin/true"
+
+  - name: Clean hosts
+    lineinfile:
+      state: absent
+      dest: /etc/hosts
+      regexp: "^(10\\.|2001:|::1)"
+
+  - name: Setup hosts file so that IP is in /etc/hosts
+    lineinfile:
+      state: present
+      dest: /etc/hosts
+      line: "{{ ansible_eth0['ipv4']['address'] }} {{ ansible_nodename }}"
+      regexp: "^{{ ansible_eth0['ipv4']['address'] }}.*"
+
+  - name: Make sure firewalld allows traffic from the machine to itself
+    firewalld:
+      rich_rule: "rule family='ipv4' source address='{{ansible_eth0['ipv4']['address']}}' accept"
+      permanent: true
+      state: enabled
+
+  - name: Make sure eth0 is enabled
+    lineinfile:
+      state: present
+      dest: /etc/sysconfig/network-scripts/ifcfg-eth0
+      regexp: ^ONBOOT=
+      line: ONBOOT=yes
+
+  - name: Make sure eth1 is disabled
+    lineinfile:
+      state: present
+      dest: /etc/sysconfig/network-scripts/ifcfg-eth1
+      regexp: ^ONBOOT=
+      line: ONBOOT=no
+    when: ansible_eth1 is defined
+
+  - name: Create the data file
+    command: fallocate -l 10G /var/data
+    args:
+      creates: /var/data
+
+  - name: Format data file to xfs
+    filesystem:
+      fstype: xfs
+      dev: /var/data
+
+  - name: Mount /d
+    mount:
+      path: /d
+      src: /var/data
+      fstype: xfs
+      state: present
+
+  - name: Start and enable rpc-statd
+    service:
+      name: rpc-statd
+      enabled: true
+      state: started
+
+  - name: Clone the glusterfs code
+    git:
+      repo: 'git://review.gluster.org/glusterfs'
+      dest: '/root'
+      version: HEAD
+      update: yes
+      force: yes
+
+  - name: Generate a key for georep
+    shell: ssh-keygen -q -P '' -C "key for georep test" -f /root/.ssh/id_georep
+    args:
+      creates: /root/.ssh/id_georep
+
+  - name: Get the public key
+    shell: cat /root/.ssh/id_georep.pub
+    register: georep_pub_key
+    changed_when: False
+
+  - name: Link the key to the default key
+    file:
+      state: link
+      src: /root/.ssh/id_georep{{ item }}
+      dest: /root/.ssh/id_rsa{{ item }}
+    with_items:
+    - ''
+    - '.pub'
+
+  - name: Add authorized_key for georep tests
+    authorized_key:
+      user: root
+      key: "{{ georep_pub_key.stdout }}"
+      key_options: 'from="127.0.0.1"'

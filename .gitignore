@@ -3,3 +3,4 @@ env
 test
 .pylintrc
 instance/application.cfg
+playbooks/hosts
