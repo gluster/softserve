@@ -94,7 +94,7 @@
   - name: Clone the glusterfs code
     git:
       repo: 'git://review.gluster.org/glusterfs'
-      dest: '/root'
+      dest: '/root/glusterfs'
       version: HEAD
       update: yes
       force: yes
