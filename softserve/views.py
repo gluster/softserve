@@ -3,6 +3,7 @@ from sqlalchemy import func
 from sshpubkeys import SSHKey, exceptions
 import logging
 import re
+import subprocess
 
 from softserve import app, db, github
 from model import User, NodeRequest, Vm
@@ -84,7 +85,6 @@ def get_node_data():
         counts = request.form['counts']
         name = request.form['node_name']
         hours_ = request.form['hours']
-        pubkey_ = request.form['pubkey']
 
         # Validating the hours and node counts
         if int(counts) > 5 or int(hours_) > 4 or int(counts) > n:
@@ -92,13 +92,18 @@ def get_node_data():
             logging.exception('User entered the invalid hours or counts value')
             return render_template('form.html', n=n)
 
+        # retreive key from github account
+        key = subprocess.Popen(['curl', 'https://github.com/%s.keys' % g.user.username],
+                        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        pubkey_ = key.stdout.readline()
+
         # Validating the SSH public key
         ssh = SSHKey(pubkey_, strict=True)
         try:
             ssh.parse()
         except (exceptions.InvalidKeyError, exceptions.MalformedDataError):
-            logging.exception('Invalid key is passed')
-            flash('Invalid SSH key')
+            logging.exception('Invalid or no key is passed')
+            flash('Please upload the valid SSH key on Github')
             return render_template('form.html', n=n)
 
         # Validating the machine label
