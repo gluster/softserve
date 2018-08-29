@@ -3,7 +3,7 @@ from sqlalchemy import func
 from sshpubkeys import SSHKey, exceptions
 import logging
 import re
-import subprocess
+import requests
 
 from softserve import app, db, github
 from model import User, NodeRequest, Vm
@@ -51,6 +51,11 @@ def authorized(access_token):
             user.token = access_token
             user.email = user_data['email']
             user.name = user_data['name']
+            # retreive key from github account
+            key = requests.get('https://github.com/%s.keys'
+                               % user_data['login'])
+            pubkey_ = str((key.text).split('\n')[0])
+            user.pubkey = pubkey_
             db.session.commit()
         else:
             user.token = access_token
@@ -80,6 +85,7 @@ def get_node_data():
     count = db.session.query(func.count(Vm.id)) \
         .filter_by(state='running').scalar()
     n = (5-count)
+    user = User.query.filter_by(username=g.user.username).first()
 
     if request.method == "POST":
         counts = request.form['counts']
@@ -90,21 +96,16 @@ def get_node_data():
         if int(counts) > 5 or int(hours_) > 4 or int(counts) > n:
             flash('Please enter the valid data')
             logging.exception('User entered the invalid hours or counts value')
-            return render_template('form.html', n=n)
-
-        # retreive key from github account
-        key = subprocess.Popen(['curl', 'https://github.com/%s.keys' % g.user.username],
-                        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        pubkey_ = key.stdout.readline()
+            return render_template('form.html', n=n, pubkey=user.pubkey)
 
         # Validating the SSH public key
-        ssh = SSHKey(pubkey_, strict=True)
+        ssh = SSHKey(user.pubkey, strict=True)
         try:
             ssh.parse()
         except (exceptions.InvalidKeyError, exceptions.MalformedDataError):
             logging.exception('Invalid or no key is passed')
             flash('Please upload the valid SSH key on Github')
-            return render_template('form.html', n=n)
+            return render_template('form.html', n=n, pubkey=user.pubkey)
 
         # Validating the machine label
         label = Vm.query.filter(Vm.state == 'running',
@@ -116,11 +117,10 @@ def get_node_data():
                     user_id=g.user.id,
                     node_name=name,
                     node_counts=counts,
-                    hours=hours_,
-                    pubkey=pubkey_,)
+                    hours=hours_)
                 db.session.add(node_request)
                 db.session.commit()
-                create_node.delay(counts, name, node_request.id, pubkey_)
+                create_node.delay(counts, name, node_request.id, user.pubkey)
                 flash('Creating your machine. Please wait for a moment.')
                 return redirect('/dashboard')
             else:
@@ -135,7 +135,7 @@ def get_node_data():
             return redirect('/dashboard')
         else:
             flash('You can request upto {} machines'.format(n))
-    return render_template('form.html', n=n)
+    return render_template('form.html', n=n, pubkey=user.pubkey)
 
 
 @app.route('/delete-node/<int:vid>')
