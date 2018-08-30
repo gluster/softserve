@@ -44,6 +44,19 @@ def authorized(access_token):
         user_data = github.get('user')
         user = User.query.filter_by(username=user_data['login']).first()
 
+        # retreive key from github account
+        key = requests.get('https://github.com/%s.keys'
+                           % user_data['login'])
+        pubkey_ = str((key.text).split('\n')[0])
+
+        # validating the public key present on github
+        ssh = SSHKey(pubkey_, strict=True)
+        try:
+            ssh.parse()
+        except (exceptions.InvalidKeyError, exceptions.MalformedDataError):
+            logging.exception('Invalid or no key is there on Github')
+
+
         if user is None:
             user = User()
             db.session.add(user)
@@ -51,14 +64,11 @@ def authorized(access_token):
             user.token = access_token
             user.email = user_data['email']
             user.name = user_data['name']
-            # retreive key from github account
-            key = requests.get('https://github.com/%s.keys'
-                               % user_data['login'])
-            pubkey_ = str((key.text).split('\n')[0])
             user.pubkey = pubkey_
             db.session.commit()
         else:
             user.token = access_token
+            user.pubkey = pubkey_
             db.session.commit()
         return redirect('/dashboard')
 
@@ -91,6 +101,7 @@ def get_node_data():
         counts = request.form['counts']
         name = request.form['node_name']
         hours_ = request.form['hours']
+        key = request.form['pubkey']
 
         # Validating the hours and node counts
         if int(counts) > 5 or int(hours_) > 4 or int(counts) > n:
@@ -98,14 +109,19 @@ def get_node_data():
             logging.exception('User entered the invalid hours or counts value')
             return render_template('form.html', n=n, pubkey=user.pubkey)
 
-        # Validating the SSH public key
-        ssh = SSHKey(user.pubkey, strict=True)
-        try:
-            ssh.parse()
-        except (exceptions.InvalidKeyError, exceptions.MalformedDataError):
-            logging.exception('Invalid or no key is passed')
-            flash('Please upload the valid SSH key on Github')
-            return render_template('form.html', n=n, pubkey=user.pubkey)
+        # checking if key is changed by user or not
+        if key != user.pubkey or key == '':
+            public_key = key
+            # Validating the new SSH public key
+            ssh = SSHKey(public_key, strict=True)
+            try:
+                ssh.parse()
+            except (exceptions.InvalidKeyError, exceptions.MalformedDataError):
+                logging.exception('Invalid or no key is passed')
+                flash('Please upload a valid SSH key')
+                return render_template('form.html', n=n, pubkey=user.pubkey)
+        else:
+            public_key = user.pubkey
 
         # Validating the machine label
         label = Vm.query.filter(Vm.state == 'running',
@@ -120,7 +136,7 @@ def get_node_data():
                     hours=hours_)
                 db.session.add(node_request)
                 db.session.commit()
-                create_node.delay(counts, name, node_request.id, user.pubkey)
+                create_node.delay(counts, name, node_request.id, public_key)
                 flash('Creating your machine. Please wait for a moment.')
                 return redirect('/dashboard')
             else:
