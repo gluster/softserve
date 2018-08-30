@@ -56,7 +56,6 @@ def authorized(access_token):
         except (exceptions.InvalidKeyError, exceptions.MalformedDataError):
             logging.exception('Invalid or no key is there on Github')
 
-
         if user is None:
             user = User()
             db.session.add(user)
