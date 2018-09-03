@@ -56,7 +56,7 @@ def create_node(counts, name, node_request, pubkey):
     step = SSHKeyDeployment(pubkey)
     node_request = NodeRequest.query.get(node_request)
     for count in range(int(counts)):
-        vm_name = ''.join(['softserve-', name, '.', count+1])
+        vm_name = ''.join(['softserve-', name, '.', str(count+1)])
         node = conn.deploy_node(
             name=vm_name, image=image, size=flavor, deploy=step
         )
