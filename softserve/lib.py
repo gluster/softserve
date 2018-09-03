@@ -2,14 +2,16 @@
 Shared library functions for softserve.
 '''
 
-import time
-import pyrax
-import re
 import logging
+import socket
 from datetime import datetime
-from novaclient.exceptions import NotFound, Conflict
 from functools import wraps
+
 from flask import jsonify, g, redirect, url_for, request
+from libcloud.compute.types import Provider
+from libcloud.compute.providers import get_driver
+from libcloud.compute.deployment import SSHKeyDeployment
+
 from softserve import db, github, celery, app
 from softserve.model import Vm, NodeRequest
 
@@ -28,7 +30,8 @@ def organization_access_required(org):
             for org_ in orgs:
                 if org_['login'] == org:
                     return func(*args, **kwargs)
-            return jsonify({"response": "You must be the member of gluster"
+            return jsonify({
+                "response": "You must be the member of gluster"
                             " organization on Github to serve"
                             " yourself machines"
                             " for testing"}), 401
@@ -41,56 +44,54 @@ def create_node(counts, name, node_request, pubkey):
     '''
     Create a node in the cloud provider
     '''
-    pyrax.set_setting('identity_type', app.config['AUTH_SYSTEM'])
-    pyrax.set_default_region(app.config['AUTH_SYSTEM_REGION'])
-    pyrax.set_credentials(app.config['USERNAME'], app.config['API_KEY'])
-    nova = pyrax.cloudservers
+    driver = get_driver(Provider.RACKSPACE)
+    conn = driver(
+        app.config['USERNAME'],
+        app.config['API_KEY'],
+        region=app.config['AUTH_SYSTEM_REGION']
+    )
+    flavor = conn.ex_get_size('performance1-2')
+    image = conn.get_image('8bca010c-c027-4947-b9c9-adaae6e4f020')
 
-    flavor = nova.flavors.find(name='2 GB General Purpose v1')
-    image = nova.images.find(name='centos7-test')
+    step = SSHKeyDeployment(pubkey)
     node_request = NodeRequest.query.get(node_request)
-    try:
-        nova.keypairs.create(name, pubkey)
-    except Conflict:
-        logging.exception('Keypair already exist')
-    # create the nodes
     for count in range(int(counts)):
-        vm_name = 'softserve-'+name+'.'+str(count+1)
-        node = nova.servers.create(name=vm_name, flavor=flavor.id,
-                                   image=image.id, key_name=name)
-
-        # wait for server to get active
-        while node.status == 'BUILD':
-            time.sleep(5)
-            node = nova.servers.get(node.id)
-
-        # get ip_address of the active node
-        for network in node.networks['public']:
-            if re.match(r'\d+\.\d+\.\d+\.\d+', network):
-                machine = Vm(ip_address=network,
-                             vm_name=vm_name,
-                             state=node.status)
-                machine.details = node_request
-                db.session.add(machine)
-                db.session.commit()
-
-    # get rid of key pair from the list on Rackspace
-    nova.keypairs.delete(name)
+        vm_name = ''.join(['softserve-', name, '.', count+1])
+        node = conn.deploy_node(
+            name=vm_name, image=image, size=flavor, deploy=step
+        )
+        for ip_addr in node.public_ips:
+            try:
+                socket.inet_pton(socket.AF_INET, ip_addr)
+                network = ip_addr
+            except socket.error:
+                continue
+        machine = Vm(ip_address=network,
+                     vm_name=vm_name,
+                     state=node.status)
+        machine.details = node_request
+        db.session.add(machine)
+        db.session.commit()
 
 
 @celery.task()
 def delete_node(vm_name):
-    pyrax.set_setting('identity_type', app.config['AUTH_SYSTEM'])
-    pyrax.set_default_region(app.config['AUTH_SYSTEM_REGION'])
-    pyrax.set_credentials(app.config['USERNAME'], app.config['API_KEY'])
-    nova_obj = pyrax.cloudservers
-    vm = Vm.query.filter_by(vm_name=vm_name, state='ACTIVE').first()
-    try:
-        node = nova_obj.servers.find(name=vm_name)
-        node.delete()
-    except NotFound:
+    driver = get_driver(Provider.RACKSPACE)
+    conn = driver(
+        app.config['USERNAME'],
+        app.config['API_KEY'],
+        region=app.config['AUTH_SYSTEM_REGION']
+    )
+    machine = Vm.query.filter_by(vm_name=vm_name, state='ACTIVE').first()
+    found = False
+    for node in conn.list_nodes():
+        if node.name == machine.vm_name:
+            node.destroy()
+            machine.state = 'DELETED'
+            machine.deleted_at = datetime.now()
+            db.session.add(machine)
+            db.session.commit()
+            found = True
+            break
+    if found is False:
         logging.exception('Server not found')
-    vm.state = 'DELETED'
-    vm.deleted_at = datetime.now()
-    db.session.add(vm)
-    db.session.commit()
