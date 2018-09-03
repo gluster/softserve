@@ -68,7 +68,7 @@ def create_node(counts, name, node_request, pubkey):
                 continue
         machine = Vm(ip_address=network,
                      vm_name=vm_name,
-                     state=node.status)
+                     state=node.state)
         machine.details = node_request
         db.session.add(machine)
         db.session.commit()
@@ -82,7 +82,7 @@ def delete_node(vm_name):
         app.config['API_KEY'],
         region=app.config['AUTH_SYSTEM_REGION']
     )
-    machine = Vm.query.filter_by(vm_name=vm_name, state='ACTIVE').first()
+    machine = Vm.query.filter_by(vm_name=vm_name, state='running').first()
     found = False
     for node in conn.list_nodes():
         if node.name == machine.vm_name:
