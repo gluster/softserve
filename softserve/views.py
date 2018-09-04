@@ -67,7 +67,7 @@ def logout():
 @organization_access_required('gluster')
 def dashboard():
     vms = Vm.query.filter(NodeRequest.user_id == g.user.id,
-                          Vm.state == 'ACTIVE') \
+                          Vm.state == 'running') \
           .join(NodeRequest).join(User).all()
     admins = app.config['ADMINS']
     return render_template('dashboard.html', vms=vms, admins=admins)
@@ -77,7 +77,7 @@ def dashboard():
 @organization_access_required('gluster')
 def get_node_data():
     count = db.session.query(func.count(Vm.id)) \
-        .filter_by(state='ACTIVE').scalar()
+        .filter_by(state='running').scalar()
     n = (5-count)
 
     if request.method == "POST":
@@ -102,7 +102,7 @@ def get_node_data():
             return render_template('form.html', n=n)
 
         # Validating the machine label
-        label = Vm.query.filter(Vm.state == 'ACTIVE',
+        label = Vm.query.filter(Vm.state == 'running',
                                 NodeRequest.node_name == name). \
             join(NodeRequest).first()
         if label is None:
@@ -139,7 +139,7 @@ def get_node_data():
 def delete(vid=None):
     if vid is None:
         vms = Vm.query.filter(NodeRequest.user_id == g.user.id,
-                              Vm.state == 'ACTIVE') \
+                              Vm.state == 'running') \
               .join(NodeRequest).join(User).all()
 
         for m in vms:
