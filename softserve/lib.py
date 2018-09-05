@@ -56,7 +56,7 @@ def create_node(counts, name, node_request, pubkey):
     # On python 3 a unicode string should be str. On python2, we will have to
     # force unicode to str. Otherwise libcloud doesn't recognize it.
     if not isinstance(pubkey, str):
-        str(pubkey)
+        pubkey = str(pubkey)
 
     step = SSHKeyDeployment(pubkey)
     node_request = NodeRequest.query.get(node_request)
