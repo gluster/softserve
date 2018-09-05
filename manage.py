@@ -15,7 +15,7 @@ def make_shell_context():
 @app.cli.command()
 def shutdown_check():
     '''Command to shut down the VM when exceeding the time limit'''
-    vms = Vm.query.filter_by(state='ACTIVE').all()
+    vms = Vm.query.filter_by(state='running').all()
     if vms == []:
         pass
     else:
