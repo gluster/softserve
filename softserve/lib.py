@@ -1,7 +1,6 @@
 '''
 Shared library functions for softserve.
 '''
-
 import logging
 import socket
 from datetime import datetime
@@ -52,6 +51,12 @@ def create_node(counts, name, node_request, pubkey):
     )
     flavor = conn.ex_get_size('performance1-2')
     image = conn.get_image('8bca010c-c027-4947-b9c9-adaae6e4f020')
+
+    # Terrible hack to workaround libcloud bug #1011
+    # On python 3 a unicode string should be str. On python2, we will have to
+    # force unicode to str. Otherwise libcloud doesn't recognize it.
+    if not isinstance(pubkey, str):
+        str(pubkey)
 
     step = SSHKeyDeployment(pubkey)
     node_request = NodeRequest.query.get(node_request)
