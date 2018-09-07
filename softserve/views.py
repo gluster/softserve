@@ -47,14 +47,7 @@ def authorized(access_token):
         # retreive key from github account
         key = requests.get('https://github.com/%s.keys'
                            % user_data['login'])
-        pubkey_ = str((key.text).split('\n')[0])
-
-        # validating the public key present on github
-        ssh = SSHKey(pubkey_, strict=True)
-        try:
-            ssh.parse()
-        except (exceptions.InvalidKeyError, exceptions.MalformedDataError):
-            logging.exception('Invalid or no key is there on Github')
+        pubkey_ = str((key.text))
 
         if user is None:
             user = User()
@@ -109,7 +102,7 @@ def get_node_data():
             return render_template('form.html', n=n, pubkey=user.pubkey)
 
         # checking if key is changed by user or not
-        if key != user.pubkey or key == '':
+        if key != user.pubkey:
             public_key = key
             # Validating the new SSH public key
             ssh = SSHKey(public_key, strict=True)
