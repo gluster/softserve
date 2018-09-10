@@ -19,7 +19,7 @@ depends_on = None
 def upgrade():
     op.drop_column('node_request', 'pubkey')
     op.add_column('user', sa.Column('pubkey',
-                                    sa.String(length=1024),
+                                    sa.String(length=4096),
                                     nullable=False))
 
 

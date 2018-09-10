@@ -47,7 +47,11 @@ def authorized(access_token):
         # retreive key from github account
         key = requests.get('https://github.com/%s.keys'
                            % user_data['login'])
-        pubkey_ = str((key.text))
+        if key.status_code == 200:
+            pubkey_ = str((key.text))
+        else:
+            pubkey_ = 'N/A'
+            logging.exception('Failed to retrieve key from Github')
 
         if user is None:
             user = User()

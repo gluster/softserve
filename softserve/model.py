@@ -15,7 +15,7 @@ class User(db.Model):
     token = db.Column(db.String(1000))
     email = db.Column(db.String(100), unique=True)
     name = db.Column(db.String(100))
-    pubkey = db.Column(db.String(1024), nullable=False)
+    pubkey = db.Column(db.String(4096), nullable=False)
     admin = db.Column(db.Boolean, default=False, nullable=False)
     node_request = db.relationship(
         'NodeRequest',
