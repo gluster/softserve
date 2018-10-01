@@ -20,11 +20,11 @@ def upgrade():
     op.drop_column('node_request', 'pubkey')
     op.add_column('user', sa.Column('pubkey',
                                     sa.String(length=4096),
-                                    nullable=False))
+                                    nullable=True))
 
 
 def downgrade():
     op.drop_column('user', 'pubkey')
     op.add_column('node_request', sa.Column('pubkey',
                                             sa.VARCHAR(length=1024),
-                                            nullable=False))
+                                            nullable=True))
