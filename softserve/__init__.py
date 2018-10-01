@@ -4,6 +4,13 @@ from flask_migrate import Migrate
 from flask_bootstrap import Bootstrap
 from flask_github import GitHub
 from celery import Celery
+try:
+    import sentry_sdk
+    from sentry_sdk.integrations.flask import FlaskIntegration
+    sentry_sdk.init(integrations=[FlaskIntegration()])
+except ImportError:
+    pass
+
 
 app = Flask(__name__, instance_relative_config=True)
 app.config.from_pyfile('default.cfg')

@@ -1,3 +1,4 @@
 -r requirements.txt
 psycopg2
 gunicorn
+sentry-sdk[flask]==0.3.5
