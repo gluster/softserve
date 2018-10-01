@@ -15,6 +15,7 @@ class User(db.Model):
     token = db.Column(db.String(1000))
     email = db.Column(db.String(100), unique=True)
     name = db.Column(db.String(100))
+    pubkey = db.Column(db.String(4096), nullable=True)
     admin = db.Column(db.Boolean, default=False, nullable=False)
     node_request = db.relationship(
         'NodeRequest',
@@ -36,7 +37,6 @@ class NodeRequest(db.Model):
     node_name = db.Column(db.String(100), nullable=False)
     node_counts = db.Column(db.Integer, nullable=False)
     hours = db.Column(db.Integer, nullable=False)
-    pubkey = db.Column(db.VARCHAR(1024), nullable=False)
     vms = db.relationship('Vm', backref='details', lazy='dynamic')
 
     def as_dict(self):
