@@ -7,12 +7,7 @@ from datetime import datetime
 from functools import wraps
 import time
 import boto.ec2
-
 from flask import jsonify, g, redirect, url_for, request
-from libcloud.compute.types import Provider
-from libcloud.compute.providers import get_driver
-from libcloud.compute.base import NodeAuthSSHKey
-from libcloud.compute.deployment import SSHKeyDeployment, MultiStepDeployment
 
 from softserve import db, github, celery, app
 from softserve.model import Vm, NodeRequest
