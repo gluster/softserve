@@ -10,3 +10,4 @@ Flask-Script
 Flask-Bootstrap
 sshpubkeys
 celery[redis]
+boto

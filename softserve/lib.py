@@ -2,7 +2,6 @@
 Shared library functions for softserve.
 '''
 import logging
-import socket
 from datetime import datetime
 from functools import wraps
 import time
@@ -42,7 +41,7 @@ def create_node(counts, name, node_request, pubkey):
     Create a node in the cloud provider
     '''
     conn = boto.ec2.connect_to_region(app.config['REGION_NAME'])
-    key = conn.import_key_pair(name, pubkey)
+    conn.import_key_pair(name, pubkey)
     for count in range(int(counts)):
         vm_name = ''.join(['softserve-', name, '.', str(count+1)])
 
@@ -59,7 +58,7 @@ def create_node(counts, name, node_request, pubkey):
             time.sleep(5)
 
         # add instance tag
-        instance.add_tag("Name",vm_name)
+        instance.add_tag("Name", vm_name)
 
         state = str(instance.state)
         ip_address = instance.ip_address
@@ -73,7 +72,7 @@ def create_node(counts, name, node_request, pubkey):
         db.session.add(machine)
         db.session.commit()
 
-    #delete imported key pair after creation
+    # delete imported key pair after creation
     conn.delete_key_pair(name)
 
 
@@ -81,7 +80,8 @@ def create_node(counts, name, node_request, pubkey):
 def delete_node(vm_name):
     conn = boto.ec2.connect_to_region(app.config['REGION_NAME'])
     # get the list of running instances on AWS
-    reservations=conn.get_all_reservations(filters={'instance-state-name': 'running'})
+    reservations = conn.get_all_reservations(
+        filters={'instance-state-name': 'running'})
     machine = Vm.query.filter_by(vm_name=vm_name, state='running').first()
     found = False
     for reservation in reservations:
