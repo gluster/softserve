@@ -2,7 +2,6 @@ Flask
 Flask-SQLAlchemy
 Flask-Migrate
 pytz
-apache-libcloud
 paramiko
 requests
 GitHub-Flask

@@ -2,6 +2,7 @@
 Shared library functions for softserve.
 '''
 import logging
+import sys
 from datetime import datetime
 from functools import wraps
 import time
@@ -46,16 +47,21 @@ def create_node(counts, name, node_request, pubkey):
         vm_name = ''.join(['softserve-', name, '.', str(count+1)])
 
         reservation = conn.run_instances(
-                      'ami-04f22a6831d585e63',
+                      app.config['IMAGE_ID'],
                       key_name=name,
-                      instance_type='t3.small',
-                      security_groups=['regression'])
+                      instance_type=app.config['INSTANCE_TYPE'],
+                      security_groups=[app.config['SECURITY_GROUP']])
 
         instance = reservation.instances[0]
 
-        # wait for instance to be running
-        while instance.update() != "running":
-            time.sleep(5)
+        # wait for the instance to be running
+        timeout = 300
+        start_time = time.time()
+        while (instance.update() != "running"):
+            if time.time() < start_time + timeout:
+                time.sleep(5)
+            else:
+                logging.exception('Instance creation is taking too long')
 
         # add instance tag
         instance.add_tag("Name", vm_name)
