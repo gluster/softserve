@@ -2,7 +2,6 @@
 Shared library functions for softserve.
 '''
 import logging
-import sys
 from datetime import datetime
 from functools import wraps
 import time
@@ -61,7 +60,11 @@ def create_node(counts, name, node_request, pubkey):
             if time.time() < start_time + timeout:
                 time.sleep(5)
             else:
-                logging.exception('Instance creation is taking too long')
+                try:
+                    raise Exception('Instance creation is taking long time')
+                except Exception as e:
+                    logging.exception(e)
+                    sys.exit(1)
 
         # add instance tag
         instance.add_tag("Name", vm_name)
