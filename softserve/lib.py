@@ -64,7 +64,6 @@ def create_node(counts, name, node_request, pubkey):
                     raise Exception('Instance creation is taking long time')
                 except Exception as e:
                     logging.exception(e)
-                    sys.exit(1)
 
         # add instance tag
         instance.add_tag("Name", vm_name)
