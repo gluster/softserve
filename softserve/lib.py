@@ -90,7 +90,7 @@ def create_node(counts, name, node_request, pubkey):
 def delete_node(vm_name):
     conn = boto.ec2.connect_to_region(app.config['REGION_NAME'],
         aws_access_key_id=app.config['AWS_ACCESS_KEY_ID'],
-        aws_secret_access_key=app.config['AWS_SECRET_ACCESS_KEY']))
+        aws_secret_access_key=app.config['AWS_SECRET_ACCESS_KEY'])
     # get the list of running instances on AWS
     reservations = conn.get_all_reservations(
         filters={'instance-state-name': 'running'})
