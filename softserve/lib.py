@@ -2,14 +2,11 @@
 Shared library functions for softserve.
 '''
 import logging
-import socket
 from datetime import datetime
 from functools import wraps
-
+import time
+import boto.ec2
 from flask import jsonify, g, redirect, url_for, request
-from libcloud.compute.types import Provider
-from libcloud.compute.providers import get_driver
-from libcloud.compute.deployment import SSHKeyDeployment
 
 from softserve import db, github, celery, app
 from softserve.model import Vm, NodeRequest
@@ -43,60 +40,67 @@ def create_node(counts, name, node_request, pubkey):
     '''
     Create a node in the cloud provider
     '''
-    driver = get_driver(Provider.RACKSPACE)
-    conn = driver(
-        app.config['USERNAME'],
-        app.config['API_KEY'],
-        region=app.config['AUTH_SYSTEM_REGION']
-    )
-    flavor = conn.ex_get_size('performance1-2')
-    image = conn.get_image('8bca010c-c027-4947-b9c9-adaae6e4f020')
-
-    # Terrible hack to workaround libcloud bug #1011
-    # On python 3 a unicode string should be str. On python2, we will have to
-    # force unicode to str. Otherwise libcloud doesn't recognize it.
-    if not isinstance(pubkey, str):
-        pubkey = str(pubkey)
-
-    step = SSHKeyDeployment(pubkey)
-    node_request = NodeRequest.query.get(node_request)
+    conn = boto.ec2.connect_to_region(app.config['REGION_NAME'])
+    conn.import_key_pair(name, pubkey)
     for count in range(int(counts)):
         vm_name = ''.join(['softserve-', name, '.', str(count+1)])
-        node = conn.deploy_node(
-            name=vm_name, image=image, size=flavor, deploy=step
-        )
-        for ip_addr in node.public_ips:
-            try:
-                socket.inet_pton(socket.AF_INET, ip_addr)
-                network = ip_addr
-            except socket.error:
-                continue
-        machine = Vm(ip_address=network,
+
+        reservation = conn.run_instances(
+                      app.config['IMAGE_ID'],
+                      key_name=name,
+                      instance_type=app.config['INSTANCE_TYPE'],
+                      security_groups=[app.config['SECURITY_GROUP']])
+
+        instance = reservation.instances[0]
+
+        # wait for the instance to be running
+        timeout = 300
+        start_time = time.time()
+        while (instance.update() != "running"):
+            if time.time() < start_time + timeout:
+                time.sleep(5)
+            else:
+                try:
+                    raise Exception('Instance creation is taking long time')
+                except Exception as e:
+                    logging.exception(e)
+
+        # add instance tag
+        instance.add_tag("Name", vm_name)
+
+        state = str(instance.state)
+        ip_address = instance.ip_address
+
+        node_request = NodeRequest.query.filter_by(id=node_request).first()
+
+        machine = Vm(ip_address=ip_address,
                      vm_name=vm_name,
-                     state=node.state)
+                     state=state)
         machine.details = node_request
         db.session.add(machine)
         db.session.commit()
 
+    # delete imported key pair after creation
+    conn.delete_key_pair(name)
+
 
 @celery.task()
 def delete_node(vm_name):
-    driver = get_driver(Provider.RACKSPACE)
-    conn = driver(
-        app.config['USERNAME'],
-        app.config['API_KEY'],
-        region=app.config['AUTH_SYSTEM_REGION']
-    )
+    conn = boto.ec2.connect_to_region(app.config['REGION_NAME'])
+    # get the list of running instances on AWS
+    reservations = conn.get_all_reservations(
+        filters={'instance-state-name': 'running'})
     machine = Vm.query.filter_by(vm_name=vm_name, state='running').first()
     found = False
-    for node in conn.list_nodes():
-        if node.name == machine.vm_name:
-            node.destroy()
-            machine.state = 'DELETED'
-            machine.deleted_at = datetime.now()
-            db.session.add(machine)
-            db.session.commit()
-            found = True
-            break
+    for reservation in reservations:
+        for node in reservation.instances:
+            if str(node.tags['Name']) == machine.vm_name:
+                node.terminate()
+                machine.state = 'deleted'
+                machine.deleted_at = datetime.now()
+                db.session.add(machine)
+                db.session.commit()
+                found = True
+                break
     if found is False:
         logging.exception('Server not found')
