@@ -40,7 +40,9 @@ def create_node(counts, name, node_request, pubkey):
     '''
     Create a node in the cloud provider
     '''
-    conn = boto.ec2.connect_to_region(app.config['REGION_NAME'])
+    conn = boto.ec2.connect_to_region(app.config['REGION_NAME'],
+        aws_access_key_id=app.config['AWS_ACCESS_KEY_ID'],
+        aws_secret_access_key=app.config['AWS_SECRET_ACCESS_KEY'])
     conn.import_key_pair(name, pubkey)
     for count in range(int(counts)):
         vm_name = ''.join(['softserve-', name, '.', str(count+1)])
@@ -86,7 +88,9 @@ def create_node(counts, name, node_request, pubkey):
 
 @celery.task()
 def delete_node(vm_name):
-    conn = boto.ec2.connect_to_region(app.config['REGION_NAME'])
+    conn = boto.ec2.connect_to_region(app.config['REGION_NAME'],
+        aws_access_key_id=app.config['AWS_ACCESS_KEY_ID'],
+        aws_secret_access_key=app.config['AWS_SECRET_ACCESS_KEY']))
     # get the list of running instances on AWS
     reservations = conn.get_all_reservations(
         filters={'instance-state-name': 'running'})
