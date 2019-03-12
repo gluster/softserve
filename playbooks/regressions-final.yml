@@ -40,16 +40,40 @@
       dest: /etc/hosts
       regexp: "^(10\\.|2001:|::1)"
 
+  - name: Setup hostname
+    hostname:
+      name: "{{ inventory_hostname }}"
+
+  - name: Setup hosts file so that IP is in /etc/hosts
+    lineinfile:
+      state: absent
+      dest: /etc/hosts
+      line: "127.0.0.1 {{ ansible_hostname }}"
+
+  - name: Setup hosts file so that IP is in /etc/hosts
+    lineinfile:
+      state: absent
+      dest: /etc/hosts
+      line: "127.0.0.1 {{ inventory_hostname }}"
+      insertbefore: BOF
+
   - name: Setup hosts file so that IP is in /etc/hosts
     lineinfile:
       state: present
       dest: /etc/hosts
-      line: "{{ ansible_eth0['ipv4']['address'] }} {{ ansible_nodename }}"
-      regexp: "^{{ ansible_eth0['ipv4']['address'] }}.*"
+      line: "{{ ansible_default_ipv4['address'] }} {{ ansible_hostname }}"
+      insertbefore: BOF
+
+  - name: Setup hosts file so that IP is in /etc/hosts
+    lineinfile:
+      state: present
+      dest: /etc/hosts
+      line: "{{ ansible_default_ipv4['address'] }} {{ inventory_hostname }}"
+      insertbefore: BOF
 
   - name: Make sure firewalld allows traffic from the machine to itself
     firewalld:
-      rich_rule: "rule family='ipv4' source address='{{ansible_eth0['ipv4']['address']}}' accept"
+      rich_rule: "rule family='ipv4' source address='{{ ansible_eth0['ipv4']['address'] }}' accept"
       permanent: true
       state: enabled
 
@@ -68,28 +92,37 @@
       line: ONBOOT=no
     when: ansible_eth1 is defined
 
-  - name: Create the data file
-    command: fallocate -l 10G /var/data
-    args:
-      creates: /var/data
-
-  - name: Format data file to xfs
-    filesystem:
-      fstype: xfs
-      dev: /var/data
-
-  - name: Mount /d
-    mount:
-      path: /d
-      src: /var/data
-      fstype: xfs
-      state: present
-
   - name: Start and enable rpc-statd
     service:
       name: rpc-statd
       enabled: true
       state: started
+    when: location == 'rax' or location == 'aws'
+
+  - name: Create various directories for tests
+    file:
+      name: "{{ item }}"
+      mode: "u=rwx,g=rx,o=rx"
+      owner: jenkins
+      group: jenkins
+      state: directory
+    with_items:
+    - /var/log/glusterfs
+    - /var/{% if ansible_system == 'FreeBSD'%}db{% else %}lib{% endif %}/glusterd
+    - /var/run/gluster
+    - /d
+    - /archives
+    - /d/archived_builds
+    - /d/backends
+    - /d/build
+    - /d/logs
+    - /home/jenkins/root
+    - /archives/archived_builds
+    - /archives/log
+    - /archives/logs
+
+  - name: Symlink /d/build to /build
+    file: src=/d/build dest=/build state=link
 
   - name: Clone the glusterfs code
     git:
@@ -98,28 +131,3 @@
       version: HEAD
       update: yes
       force: yes
-
-  - name: Generate a key for georep
-    shell: ssh-keygen -q -P '' -C "key for georep test" -f /root/.ssh/id_georep
-    args:
-      creates: /root/.ssh/id_georep
-
-  - name: Get the public key
-    shell: cat /root/.ssh/id_georep.pub
-    register: georep_pub_key
-    changed_when: False
-
-  - name: Link the key to the default key
-    file:
-      state: link
-      src: /root/.ssh/id_georep{{ item }}
-      dest: /root/.ssh/id_rsa{{ item }}
-    with_items:
-    - ''
-    - '.pub'
-
-  - name: Add authorized_key for georep tests
-    authorized_key:
-      user: root
-      key: "{{ georep_pub_key.stdout }}"
-      key_options: 'from="127.0.0.1"'

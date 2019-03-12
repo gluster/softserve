@@ -1,0 +1,6 @@
+[softserve]
+<hostname> ansible_host=<ip_address>
+
+[softserve:vars]
+location=aws
+ansible_ssh_common_args='-o ProxyCommand="ssh -q -W %h:%p root@logs.aws.gluster.org"'
