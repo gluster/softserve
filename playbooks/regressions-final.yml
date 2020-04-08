@@ -127,7 +127,7 @@
   - name: Clone the glusterfs code
     git:
       repo: 'git://review.gluster.org/glusterfs'
-      dest: '/root/glusterfs'
+      dest: '/home/centos/glusterfs'
       version: HEAD
       update: yes
       force: yes
