@@ -96,6 +96,7 @@ def get_node_data():
     if request.method == "POST":
         counts = request.form['counts']
         name = request.form['node_name']
+        os_type = request.form['os_type']
         hours_ = request.form['hours']
         key = request.form['pubkey']
 
@@ -132,7 +133,8 @@ def get_node_data():
                     hours=hours_)
                 db.session.add(node_request)
                 db.session.commit()
-                create_node.delay(counts, name, node_request.id, public_key)
+                create_node.delay(
+                    counts, name, os_type, node_request.id, public_key)
                 flash('Creating your machine. Please wait for a moment.')
                 return redirect('/dashboard')
             else:
