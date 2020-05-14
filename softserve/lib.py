@@ -36,7 +36,7 @@ def organization_access_required(org):
 
 
 @celery.task()
-def create_node(counts, name, node_request, pubkey):
+def create_node(counts, name, os_type, node_request, pubkey):
     '''
     Create a node in the cloud provider
     '''
@@ -44,14 +44,22 @@ def create_node(counts, name, node_request, pubkey):
         aws_access_key_id=app.config['AWS_ACCESS_KEY_ID'],
         aws_secret_access_key=app.config['AWS_SECRET_ACCESS_KEY'])
     conn.import_key_pair(name, pubkey)
+
     for count in range(int(counts)):
         vm_name = ''.join(['softserve-', name, '.', str(count+1)])
 
-        reservation = conn.run_instances(
-                      app.config['IMAGE_ID'],
-                      key_name=name,
-                      instance_type=app.config['INSTANCE_TYPE'],
-                      security_groups=[app.config['SECURITY_GROUP']])
+        if os_type == 'Centos-7':
+            reservation = conn.run_instances(
+                          app.config['IMAGE_ID_7'],
+                          key_name=name,
+                          instance_type=app.config['INSTANCE_TYPE'],
+                          security_groups=[app.config['SECURITY_GROUP']])
+        else:
+            reservation = conn.run_instances(
+                          app.config['IMAGE_ID_8'],
+                          key_name=name,
+                          instance_type=app.config['INSTANCE_TYPE'],
+                          security_groups=[app.config['SECURITY_GROUP']])
 
         instance = reservation.instances[0]
 
