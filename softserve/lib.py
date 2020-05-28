@@ -36,7 +36,7 @@ def organization_access_required(org):
 
 
 @celery.task()
-def create_node(counts, name, os_type, node_request, pubkey):
+def create_node(counts, name, os_type, node_request_id, pubkey):
     '''
     Create a node in the cloud provider
     '''
@@ -82,7 +82,7 @@ def create_node(counts, name, os_type, node_request, pubkey):
         state = str(instance.state)
         ip_address = instance.ip_address
 
-        node_request = NodeRequest.query.filter_by(id=node_request).first()
+        node_request = NodeRequest.query.filter_by(id=node_request_id).first()
 
         machine = Vm(ip_address=ip_address,
                      vm_name=vm_name,
