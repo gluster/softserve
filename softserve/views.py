@@ -91,6 +91,7 @@ def get_node_data():
     count = db.session.query(func.count(Vm.id)) \
         .filter_by(state='running').scalar()
     n = (5-count)
+    _max_hours = 8
     user = User.query.filter_by(username=g.user.username).first()
 
     if request.method == "POST":
@@ -101,10 +102,10 @@ def get_node_data():
         key = request.form['pubkey']
 
         # Validating the hours and node counts
-        if int(counts) > 5 or int(hours_) > 4 or int(counts) > n:
+        if int(counts) > 5 or int(hours_) > _max_hours or int(counts) > n:
             flash('Please enter the valid data')
             logging.exception('User entered the invalid hours or counts value')
-            return render_template('form.html', n=n, pubkey=user.pubkey)
+            return render_template('form.html', n=n, max_hours=_max_hours, pubkey=user.pubkey)
 
         # checking if key is changed by user or not
         if key != user.pubkey:
@@ -116,7 +117,7 @@ def get_node_data():
             except (exceptions.InvalidKeyError, exceptions.MalformedDataError):
                 logging.exception('Invalid or no key is passed')
                 flash('Please upload a valid SSH key')
-                return render_template('form.html', n=n, pubkey=user.pubkey)
+                return render_template('form.html', n=n, max_hours=_max_hours, pubkey=user.pubkey)
         else:
             public_key = user.pubkey
 
@@ -149,7 +150,7 @@ def get_node_data():
             return redirect('/dashboard')
         else:
             flash('You can request upto {} machines'.format(n))
-    return render_template('form.html', n=n, pubkey=user.pubkey)
+    return render_template('form.html', n=n, max_hours=_max_hours, pubkey=user.pubkey)
 
 
 @app.route('/delete-node/<int:vid>')
