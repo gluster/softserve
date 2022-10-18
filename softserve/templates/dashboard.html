@@ -18,9 +18,15 @@
   </div>
   <h2>Active machines</h2>
     <p>
-    <a class="btn btn-info btn-lg" href="{{ url_for('get_node_data') }}" role="button">
-      <span class="glyphicon glyphicon-plus"></span>
-      CREATE NODES</a>
+    {% if vms|length >= 5 %}
+      <a class="btn btn-info btn-lg" role="button" Onclick="return LimitReached();" disabled>
+        <span class="glyphicon glyphicon-plus"></span>
+        CREATE NODES</a>
+    {% else %}
+      <a class="btn btn-info btn-lg" href="{{ url_for('get_node_data') }}" role="button">
+        <span class="glyphicon glyphicon-plus"></span>
+        CREATE NODES</a>
+    {% endif %}
     {% if not vms == [] %}
       <a class="btn btn-info btn-lg" href="/delete-node" role="button" Onclick="return ConfirmDelete();" >
         <span class="glyphicon glyphicon-trash"></span>
@@ -75,6 +81,10 @@
           return true;
       else
         return false;
+    }
+  function LimitReached()
+    {
+      alert ("Sorry, The Maximum VM limit reached!")
     }
 </script>
 {% endblock content %}

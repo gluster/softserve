@@ -41,12 +41,16 @@
     </div>
   </div>
   <div class="row">
-     <div class="form-group col-md-5">
-       <label for="counts">Number of machines</label>
-       <input type="number" min="1" max="{{n}}" class="form-control" name="counts">
-       <p><small id="maximumAllowedMachines" class="text-muted">
-          Note: Maximum 5 machines at a time across all users
-       </small></p>
+    <div class="form-group col-md-5">
+      <label for="counts">Number of machines</label>
+      <select class="form-control" name="counts">
+      {% for count in range(1,n+1) %}
+        <option value={{count}}>{{count}}</option>
+      {% endfor %}
+      </select>
+      <p><small id="maximumAllowedMachines" class="text-muted">
+        Note: Maximum 5 machines at a time across all users
+      </small></p>
     </div>
   </div>
   <div class='row'>
